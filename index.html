@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#22c55e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GH Shibishane">
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <title>GREEN HOUSE SHIBISHANE - With Newsfeed</title>
@@ -58,6 +61,9 @@
 .invoice-item{display:grid;grid-template-columns:1fr 80px 80px 40px;gap:8px;margin:8px 0}
 .invoice-total{font-size:1.2rem;font-weight:900;color:var(--warning)}
 .paid-badge{background:var(--success);color:#000;padding:4px 10px;border-radius:20px;font-weight:800}
+
+/* PWA INSTALL BUTTON */
+#installBtn{display:none;position:fixed;bottom:20px;right:20px;z-index:999;background:var(--warning);color:#000;padding:14px 20px;border-radius:50px;font-weight:900;box-shadow:0 8px 30px rgba(251,191,36,0.5)}
 </style>
 </head>
 <body>
@@ -81,6 +87,7 @@
     <button class="btn secondary" style="width:auto" onclick="showTab('invoices')">📄 Invoices</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('services')">Services</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('feed')">📢 Newsfeed</button>
+    <button class="btn secondary" style="width:auto;background:var(--warning);color:#000" onclick="copyClientLink()">📱 Copy Client Link</button>
   </div>
 
   <div class="container">
@@ -165,6 +172,7 @@
 <div id="clientView" style="display:none">
   <header><h1>GREEN HOUSE SHIBISHANE</h1><p>Your Home Away From Home</p></header>
   <div class="container">
+    <button id="installBtn" onclick="installPWA()">📲 Install App</button>
     <h3 style="margin-bottom:15px">🔥 What's Happening Now</h3>
     <div id="clientFeed"></div>
     <div id="clientContent"></div>
@@ -182,6 +190,7 @@
 <div id="printArea" style="display:none"></div>
 
 <script>
+let deferredPrompt;
 let tickets = JSON.parse(localStorage.getItem('shibishaneTickets')) || [];
 let ticketPrices = JSON.parse(localStorage.getItem('shibishanePrices')) || {
   "Pool Day Pass": 50, "VIP Entry": 500, "General Entry": 100,
@@ -204,7 +213,28 @@ let invoiceItemCount = 0;
 
 const CONTACT = {email:'greenhouseshibishane@gmail.com',phone:'068 254 7352',location:'Greater Tubatse, Limpopo',hours:'Mon - Sun | 8am - Late',company:'GREEN HOUSE SHIBISHANE'};
 
-function saveCategories(){ localStorage.setItem('shibishaneCategories', JSON.stringify(CATEGORIES)); } // NEW
+function saveCategories(){ localStorage.setItem('shibishaneCategories', JSON.stringify(CATEGORIES)); }
+
+// ========== ENHANCEMENT: CLIENT LINK + PWA ==========
+function copyClientLink(){
+  const link = window.location.origin + window.location.pathname + '#guest';
+  navigator.clipboard.writeText(link);
+  alert('✓ Client Link Copied!\n' + link);
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if(window.location.hash === '#guest') document.getElementById('installBtn').style.display = 'block';
+});
+
+function installPWA(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { document.getElementById('installBtn').style.display = 'none'; });
+  }
+}
+// ========== END ENHANCEMENT ==========
 
 function login(role){
   currentRole = role;
@@ -223,6 +253,7 @@ function logout(){
   document.getElementById('loginScreen').style.display='block';
 }
 function enterClientMode(){
+  window.location.hash = 'guest'; // ENHANCED: Force hash
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('clientView').style.display='block';
   renderClientFeed(); renderClient();
@@ -598,6 +629,7 @@ function deletePost(id){
   renderFeed();
 }
 
+// ENHANCED: AUTO LOAD CLIENT VIEW ON REFRESH
 window.addEventListener('load', ()=>{
   if(window.location.hash === '#guest'){
     document.getElementById('loginScreen').style.display='none';
