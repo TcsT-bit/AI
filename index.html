@@ -546,10 +546,11 @@ function renderTickets(){
   document.getElementById('activeGuests').innerText = tickets.filter(t=>t.status==='Active').length;
   document.getElementById('ticketsList').innerHTML = tickets.slice().reverse().slice(0,20).map(t=>`
     <div class="ticket">
-      <div class="ticket-number">#${t.name}</h4>
-      <p><b>Service:</b> ${t.type} - R${t.price}</p>
+      <div class="ticket-number">#${t.id}</div>
+      <h4>${t.name}</h4>
+      <p<b>Service:</b> ${t.type} - R${t.price}</p>
       <p><b>Time:</b> ${t.time}</p>
-      <p><b>Status:</b> ${t.status}</p>
+      <p><b>Status:</b> <span style="color:${t.status==='Active'?'var(--success)':'var(--muted)'}">${t.status}</span></p>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn small" onclick="printTicket('${t.id}')">🖨️ Print</button>
         <button class="btn small secondary" onclick="showQR('${t.id}')">📱 QR</button>
