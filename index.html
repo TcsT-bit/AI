@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#22c55e">
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <title>GREEN HOUSE SHIBISHANE - With Newsfeed</title>
 <style>
   :root {
@@ -26,6 +27,7 @@
 .ticket-number{position:absolute;top:10px;right:10px;background:var(--warning);color:#000;padding:4px 10px;border-radius:20px;font-weight:900;font-size:0.8rem;}
   input,textarea,select{width:100%;padding:12px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.3);border-radius:10px;color:var(--text);margin:6px 0;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 80px;gap:10px}
 .nav-tabs{display:flex;gap:10px;overflow-x:auto;padding:12px 0;}
 .tab{padding:10px 16px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.2);border-radius:10px;cursor:pointer;font-weight:600;}
 .tab.active{background:linear-gradient(135deg,var(--accent2),var(--accent));}
@@ -51,6 +53,11 @@
 .feed-video{width:100%;border-radius:12px;margin:10px 0}
 .feed-img{width:100%;border-radius:12px;margin:10px 0;max-height:400px;object-fit:cover}
 .feed-time{color:var(--muted);font-size:0.8rem}
+
+/* INVOICE STYLES */
+.invoice-item{display:grid;grid-template-columns:1fr 80px 80px 40px;gap:8px;margin:8px 0}
+.invoice-total{font-size:1.2rem;font-weight:900;color:var(--warning)}
+.paid-badge{background:var(--success);color:#000;padding:4px 10px;border-radius:20px;font-weight:800}
 </style>
 </head>
 <body>
@@ -71,6 +78,7 @@
     <span style="background:var(--accent);padding:6px 12px;border-radius:20px;font-weight:800;" id="roleBadge">Manager</span>
     <button class="btn" style="width:auto" onclick="logout()">Logout</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('tickets')">🎟️ Tickets</button>
+    <button class="btn secondary" style="width:auto" onclick="showTab('invoices')">📄 Invoices</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('services')">Services</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('feed')">📢 Newsfeed</button>
   </div>
@@ -114,11 +122,33 @@
       </div>
     </div>
 
+    <div id="invoicesTab" style="display:none">
+      <div class="card">
+        <h3>📄 CREATE INVOICE</h3>
+        <div class="grid-2">
+          <input id="invClient" placeholder="Client Name">
+          <input id="invPhone" placeholder="Client WhatsApp 068...">
+        </div>
+        <div id="invoiceItems"></div>
+        <button class="btn small" onclick="addInvoiceItem()">+ Add Item</button>
+        <label style="display:flex;gap:10px;align-items:center;margin:10px 0">
+          <input type="checkbox" id="invVAT"> Add 15% VAT
+        </label>
+        <textarea id="invNote" placeholder="Notes: Payment terms, etc"></textarea>
+        <button class="btn" onclick="generateInvoice()">Generate Invoice</button>
+      </div>
+      <div class="card">
+        <h3>All Invoices</h3>
+        <div id="invoicesList"></div>
+      </div>
+    </div>
+
     <div id="feedTab" style="display:none">
       <div class="card" id="postBox" style="display:none">
         <h3>📢 Post to Newsfeed</h3>
         <textarea id="postText" placeholder="What's happening at Shibishane? Pool party tonight!"></textarea>
         <input type="file" id="postMedia" accept="image/*,video/*">
+        <input id="postManualLink" placeholder="Or paste Catbox.moe link here">
         <button class="btn" onclick="createPost()">Post Now</button>
       </div>
       <h3>Live Feed</h3>
@@ -138,6 +168,14 @@
     <h3 style="margin-bottom:15px">🔥 What's Happening Now</h3>
     <div id="clientFeed"></div>
     <div id="clientContent"></div>
+
+    <div class="card">
+      <h3>📋 Request Quote / Order</h3>
+      <input id="clientName" placeholder="Your Name">
+      <input id="clientPhone" placeholder="Your WhatsApp">
+      <textarea id="clientRequest" placeholder="I want to book VIP for 10 people on Saturday..."></textarea>
+      <button class="btn" onclick="sendQuoteRequest()">Send WhatsApp Request</button>
+    </div>
   </div>
 </div>
 
@@ -150,7 +188,9 @@ let ticketPrices = JSON.parse(localStorage.getItem('shibishanePrices')) || {
   "Car Wash": 70, "Braai Area": 200, "Guest Room": 450
 };
 let feedPosts = JSON.parse(localStorage.getItem('shibishaneFeed')) || [];
+let invoices = JSON.parse(localStorage.getItem('shibishaneInvoices')) || [];
 let currentRole = 'Manager';
+let invoiceItemCount = 0;
 
 const CATEGORIES = [
   {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu', products:[]},
@@ -173,7 +213,7 @@ function login(role){
     document.getElementById('postBox').style.display = 'block';
     renderPriceSettings();
   }
-  renderTicketDropdown(); renderTickets(); renderTabs(); renderContent(); renderFeed();
+  renderTicketDropdown(); renderTickets(); renderTabs(); renderContent(); renderFeed(); renderInvoices();
 }
 function logout(){
   document.getElementById('app').style.display='none';
@@ -188,15 +228,17 @@ function showTab(tab){
   document.getElementById('ticketsTab').style.display = tab==='tickets'?'block':'none';
   document.getElementById('servicesTab').style.display = tab==='services'?'block':'none';
   document.getElementById('feedTab').style.display = tab==='feed'?'block':'none';
+  document.getElementById('invoicesTab').style.display = tab==='invoices'?'block':'none';
 }
 
-// ========== NEWSFEED SYSTEM ==========
+// ========== ENHANCED NEWSFEED WITH MANUAL LINK ==========
 async function createPost(){
   const text = document.getElementById('postText').value;
   const file = document.getElementById('postMedia').files[0];
-  if(!text &&!file){ alert('Add text or media'); return; }
+  const manualLink = document.getElementById('postManualLink').value.trim();
+  if(!text &&!file &&!manualLink){ alert('Add text or media or link'); return; }
 
-  let mediaUrl = '';
+  let mediaUrl = manualLink;
   let mediaType = '';
 
   if(file){
@@ -206,8 +248,11 @@ async function createPost(){
     try{
       const res = await fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData});
       mediaUrl = await res.text();
-      mediaType = file.type.startsWith('video')? 'video' : 'image';
     }catch(e){ alert('Upload failed'); return; }
+  }
+
+  if(mediaUrl){
+    mediaType = mediaUrl.includes('.mp4') || mediaUrl.includes('.webm')? 'video' : 'image';
   }
 
   const post = {
@@ -221,47 +266,116 @@ async function createPost(){
 
   document.getElementById('postText').value = '';
   document.getElementById('postMedia').value = '';
+  document.getElementById('postManualLink').value = '';
   renderFeed();
   alert('✓ Posted to Newsfeed');
 }
-
-function deletePost(id){
-  feedPosts = feedPosts.filter(p=>p.id!== id);
-  localStorage.setItem('shibishaneFeed', JSON.stringify(feedPosts));
-  renderFeed();
-}
-
-function renderFeed(){
-  document.getElementById('feedList').innerHTML = feedPosts.map(p=>`
-    <div class="feed-post">
-      <div class="feed-header">
-        <div class="feed-avatar">GH</div>
-        <div><b>${CONTACT.company}</b><div class="feed-time">${p.time}</div></div>
-      </div>
-      <p>${p.text}</p>
-      ${p.mediaType==='image'?`<img src="${p.mediaUrl}" class="feed-img">`:''}
-      ${p.mediaType==='video'?`<video src="${p.mediaUrl}" controls class="feed-video"></video>`:''}
-      ${currentRole==='Manager'?`<button class="btn small danger" onclick="deletePost(${p.id})">Delete</button>`:''}
-    </div>
-  `).join('');
-}
-
-function renderClientFeed(){
-  document.getElementById('clientFeed').innerHTML = feedPosts.slice(0,10).map(p=>`
-    <div class="feed-post">
-      <div class="feed-header">
-        <div class="feed-avatar">GH</div>
-        <div><b>${CONTACT.company}</b><div class="feed-time">${p.time}</div></div>
-      </div>
-      <p>${p.text}</p>
-      ${p.mediaType==='image'?`<img src="${p.mediaUrl}" class="feed-img">`:''}
-      ${p.mediaType==='video'?`<video src="${p.mediaUrl}" controls class="feed-video"></video>`:''}
-    </div>
-  `).join('');
-}
 // ========== END NEWSFEED ==========
 
-// ========== ALL OTHER CODE UNCHANGED ==========
+// ========== NEW: INVOICE SYSTEM ==========
+function addInvoiceItem(){
+  invoiceItemCount++;
+  const div = document.createElement('div');
+  div.className = 'invoice-item';
+  div.id = 'invItem'+invoiceItemCount;
+  div.innerHTML = `
+    <input placeholder="Item description">
+    <input type="number" placeholder="Qty" value="1">
+    <input type="number" placeholder="Price">
+    <button class="btn danger small" onclick="document.getElementById('invItem${invoiceItemCount}').remove()">×</button>
+  `;
+  document.getElementById('invoiceItems').appendChild(div);
+}
+
+function generateInvoice(){
+  const client = document.getElementById('invClient').value;
+  const phone = document.getElementById('invPhone').value;
+  const vat = document.getElementById('invVAT').checked;
+  const note = document.getElementById('invNote').value;
+
+  let items = [];
+  let subtotal = 0;
+  document.querySelectorAll('.invoice-item').forEach(item=>{
+    const inputs = item.querySelectorAll('input');
+    const desc = inputs[0].value;
+    const qty = parseFloat(inputs[1].value) || 0;
+    const price = parseFloat(inputs[2].value) || 0;
+    if(desc && qty && price){
+      items.push({desc,qty,price,total:qty*price});
+      subtotal += qty*price;
+    }
+  });
+
+  const vatAmount = vat? subtotal*0.15 : 0;
+  const total = subtotal + vatAmount;
+  const invId = 'INV'+Date.now().toString().slice(-6);
+
+  const invoice = {id:invId, client, phone, items, subtotal, vatAmount, total, note, date:new Date().toLocaleString('en-ZA'), paid:false};
+  invoices.push(invoice);
+  localStorage.setItem('shibishaneInvoices', JSON.stringify(invoices));
+
+  sendInvoiceWhatsApp(invoice);
+  downloadPDF(invoice);
+  renderInvoices();
+  alert(`✓ Invoice ${invId} Generated`);
+}
+
+function sendInvoiceWhatsApp(inv){
+  let msg = `*${CONTACT.company} INVOICE ${inv.id}*%0A%0AClient: ${inv.client}%0ADate: ${inv.date}%0A%0A`;
+  inv.items.forEach(i=>{ msg += `${i.desc} x${i.qty} = R${i.total}%0A`; });
+  msg += `%0ASubtotal: R${inv.subtotal.toFixed(2)}%0A`;
+  if(inv.vatAmount>0) msg += `VAT 15%: R${inv.vatAmount.toFixed(2)}%0A`;
+  msg += `*TOTAL: R${inv.total.toFixed(2)}*%0A%0A${inv.note}`;
+  window.open(`https://wa.me/27${inv.phone.replace(/^0/,'')}?text=${msg}`,'_blank');
+}
+
+async function downloadPDF(inv){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text(CONTACT.company, 20, 20);
+  doc.text(`Invoice: ${inv.id}`, 20, 30);
+  doc.text(`Client: ${inv.client}`, 20, 40);
+  doc.text(`Date: ${inv.date}`, 20, 50);
+  let y = 70;
+  inv.items.forEach(i=>{ doc.text(`${i.desc} x${i.qty} R${i.total}`, 20, y); y+=10; });
+  y+=10; doc.text(`Total: R${inv.total.toFixed(2)}`, 20, y);
+  doc.save(`${inv.id}.pdf`);
+}
+
+function markPaid(id){
+  invoices.find(i=>i.id===id).paid = true;
+  localStorage.setItem('shibishaneInvoices', JSON.stringify(invoices));
+  renderInvoices();
+}
+
+function renderInvoices(){
+  document.getElementById('invoicesList').innerHTML = invoices.slice().reverse().map(inv=>`
+    <div class="ticket">
+      <div class="ticket-number">${inv.id} ${inv.paid?'<span class="paid-badge">PAID</span>':''}</div>
+      <h4>${inv.client}</h4>
+      <p><b>Total:</b> R${inv.total.toFixed(2)}</p>
+      <p><b>Date:</b> ${inv.date}</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn small" onclick="sendInvoiceWhatsApp(${JSON.stringify(inv).replace(/"/g,'&quot;')})">WhatsApp</button>
+        <button class="btn small secondary" onclick="downloadPDF(${JSON.stringify(inv).replace(/"/g,'&quot;')})">PDF</button>
+        ${!inv.paid?`<button class="btn small success" onclick="markPaid('${inv.id}')">Mark Paid</button>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+// ========== END INVOICE ==========
+
+// ========== CLIENT QUOTE REQUEST ==========
+function sendQuoteRequest(){
+  const name = document.getElementById('clientName').value;
+  const phone = document.getElementById('clientPhone').value;
+  const req = document.getElementById('clientRequest').value;
+  const msg = `*NEW QUOTE REQUEST*%0AName: ${name}%0APhone: ${phone}%0A%0ARequest: ${req}`;
+  window.open(`https://wa.me/27${CONTACT.phone.replace(/\s/g,'').replace(/^0/,'')}?text=${msg}`,'_blank');
+}
+// ========== END CLIENT QUOTE ==========
+
+// ========== ALL YOUR EXISTING CODE UNCHANGED BELOW ==========
 function addNewTicketType(){
   const name = document.getElementById('newTicketName').value.trim();
   const price = parseFloat(document.getElementById('newTicketPrice').value);
@@ -432,7 +546,9 @@ function renderContent(){
     <button class="btn secondary" onclick="sendWhatsApp('${cat.id}')">Send WhatsApp</button></div>`;
   document.getElementById('content').innerHTML = html;
 }
+
 function sendWhatsApp(id){const msg = document.getElementById('msg'+id).value || 'Hello Green House Shibishane, I need assistance'; window.open(`https://wa.me/27682547352?text=${encodeURIComponent(msg)}`,'_blank');}
+
 function renderClient(){
   let html = CATEGORIES.map(cat=>`<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800">${cat.price}</div>
     ${cat.products.length>0?`<h4 style="margin-top:10px;color:var(--accent)">On Offer:</h4><div class="product-grid">${cat.products.map(p=>`<div class="product-card">${p.images[0]?`<img src="${p.images[0]}">`:''}<h4>${p.title}</h4><p style="color:var(--muted);font-size:0.85rem">${p.desc}</p><div style="color:var(--warning);font-weight:800">${p.price}</div></div>`).join('')}</div>`:''}
@@ -448,6 +564,7 @@ window.addEventListener('load', ()=>{
     renderClientFeed(); renderClient();
   }
 });
+
 </script>
 </body>
-</html>
+      </html>
