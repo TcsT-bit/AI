@@ -87,7 +87,7 @@
     <button class="btn secondary" style="width:auto" onclick="showTab('invoices')">📄 Invoices</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('services')">Services</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('feed')">📢 Newsfeed</button>
-    <button class="btn secondary" style="width:auto;background:var(--warning);color:#000" onclick="copyClientLink()">📱 Copy Client Link</button>
+    <button class="btn secondary" id="copyLinkBtn" style="width:auto;background:var(--warning);color:#000;display:none" onclick="copyClientLink()">📱 Copy Client Link</button>
   </div>
 
   <div class="container">
@@ -198,6 +198,7 @@ let ticketPrices = JSON.parse(localStorage.getItem('shibishanePrices')) || {
 };
 let feedPosts = JSON.parse(localStorage.getItem('shibishaneFeed')) || [];
 let invoices = JSON.parse(localStorage.getItem('shibishaneInvoices')) || [];
+let clientLinkEnabled = JSON.parse(localStorage.getItem('shibishaneClientLinkEnabled')) || false; // NEW
 // ENHANCED: LOAD CATEGORIES FROM LOCALSTORAGE
 let CATEGORIES = JSON.parse(localStorage.getItem('shibishaneCategories')) || [
   {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu', products:[]},
@@ -215,11 +216,26 @@ const CONTACT = {email:'greenhouseshibishane@gmail.com',phone:'068 254 7352',loc
 
 function saveCategories(){ localStorage.setItem('shibishaneCategories', JSON.stringify(CATEGORIES)); }
 
-// ========== ENHANCEMENT: CLIENT LINK + PWA + AUTO DELETE TICKETS ==========
+// ========== ENHANCEMENT: CLIENT LINK + PWA + AUTO DELETE TICKETS + ORDER BUTTON ==========
+function toggleClientLink(){
+  clientLinkEnabled =!clientLinkEnabled;
+  localStorage.setItem('shibishaneClientLinkEnabled', JSON.stringify(clientLinkEnabled));
+  document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none';
+  alert(clientLinkEnabled? '✓ Client Link ENABLED' : '✗ Client Link DISABLED');
+}
+
 function copyClientLink(){
+  if(!clientLinkEnabled){ alert('Enable Client Link first in Settings'); return; }
   const link = window.location.origin + window.location.pathname + '#guest';
   navigator.clipboard.writeText(link);
   alert('✓ Client Link Copied!\n' + link);
+}
+
+function orderProductViaWhatsApp(productName, price){
+  const qty = prompt(`How many ${productName} do you want?`, '1');
+  if(!qty) return;
+  const msg = `*NEW ORDER*%0AProduct: ${productName}%0APrice: ${price}%0AQuantity: ${qty}%0A%0AFrom: GREEN HOUSE SHIBISHANE APP`;
+  window.open(`https://wa.me/27${CONTACT.phone.replace(/\s/g,'').replace(/^0/,'')}?text=${msg}`,'_blank');
 }
 
 function autoDeleteOldTickets(){
@@ -256,6 +272,7 @@ function login(role){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('roleBadge').innerText=role;
+  document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none'; // NEW
   if(role === 'Manager'){
     document.getElementById('priceSettingsCard').style.display = 'block';
     document.getElementById('postBox').style.display = 'block';
@@ -268,6 +285,7 @@ function logout(){
   document.getElementById('loginScreen').style.display='block';
 }
 function enterClientMode(){
+  if(!clientLinkEnabled && window.location.hash!== '#guest'){ alert('Client Link is currently disabled by Admin'); return; } // NEW
   window.location.hash = 'guest'; // ENHANCED: Force hash
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('clientView').style.display='block';
@@ -580,6 +598,7 @@ function renderProducts(cat){
         <input type="text" id="manual${cat.id}${p.id}" placeholder="Paste catbox link">
         <button class="btn small" onclick="saveManualImage('${cat.id}',${p.id})">Add</button>
       </div>
+      <button class="btn small" style="background:var(--success)" onclick="orderProductViaWhatsApp('${p.title}','${p.price}')">📱 Order via WhatsApp</button>
       <button class="btn small danger" onclick="deleteProduct('${cat.id}',${p.id})">Delete</button>
     </div>`).join('')}</div>`;
 }
@@ -595,6 +614,8 @@ function renderContent(){
       <input id="pImg${cat.id}" placeholder="Paste Catbox.moe Image Link Here - Optional">
       <button class="btn" onclick="addProduct('${cat.id}')">+ Add Product</button>
     </div>
+    <h4 style="margin-top:12px">Admin Controls</h4>
+    <button class="btn ${clientLinkEnabled?'danger':'secondary'}" onclick="toggleClientLink()">${clientLinkEnabled?'Disable':'Enable'} Client Link</button>
     <h4 style="margin-top:12px">Guest Enquiry</h4><textarea id="msg${cat.id}" placeholder="Booking, enquiry, table reservation..."></textarea>
     <button class="btn secondary" onclick="sendWhatsApp('${cat.id}')">Send WhatsApp</button></div>`;
   document.getElementById('content').innerHTML = html;
@@ -602,7 +623,7 @@ function renderContent(){
 
 function sendWhatsApp(id){const msg = document.getElementById('msg'+id).value || 'Hello Green House Shibishane, I need assistance'; window.open(`https://wa.me/27682547352?text=${encodeURIComponent(msg)}`,'_blank');}
 
-// ENHANCED: CLIENT NOW SEES ALL PRODUCT IMAGES
+// ENHANCED: CLIENT NOW SEES ALL PRODUCT IMAGES + ORDER BUTTON
 function renderClient(){
   let html = CATEGORIES.map(cat=>`<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800">${cat.price}</div>
     ${cat.products.length>0?`<h4 style="margin-top:10px;color:var(--accent)">On Offer:</h4><div class="product-grid">${cat.products.map(p=>`<div class="product-card">
@@ -611,6 +632,7 @@ function renderClient(){
       <p style="color:var(--muted);font-size:0.85rem">${p.desc}</p>
       <div style="color:var(--warning);font-weight:800">${p.price}</div>
       ${p.images.length>1?`<div class="gallery-grid">${p.images.map(img=>`<div class="gallery-item"><img src="${img}"></div>`).join('')}</div>`:''}
+      <button class="btn small" style="background:var(--success)" onclick="orderProductViaWhatsApp('${p.title}','${p.price}')">📱 Order Now</button>
     </div>`).join('')}</div>`:''}
     </div>`).join('');
   html += `<div class="card"><h3>Contact Us</h3><p><b>Phone:</b> ${CONTACT.phone}</p><p><b>Location:</b> ${CONTACT.location}</p><button class="btn" onclick="window.open('https://wa.me/27682547352')">WhatsApp Us</button></div>`;
