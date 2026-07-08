@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#22c55e">
-<title>GREEN HOUSE SHIBISHANE - Tickets + Products</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<title>GREEN HOUSE SHIBISHANE - With Newsfeed</title>
 <style>
   :root {
     --bg:#06110b; --card:#0f1f16; --accent:#22c55e; --accent2:#16a34a;
     --text:#ecfdf5; --muted:#86efac; --success:#10b981; --warning:#fbbf24; --danger:#ef4444;
-    --glow: 0 0 20px rgba(34,197,94,0.3);
   }
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
   body{background: radial-gradient(1200px 600px at 50% -10%, rgba(34,197,94,0.15), transparent), var(--bg); color:var(--text);padding-bottom:80px;}
@@ -40,6 +40,17 @@
 .gallery-item{position:relative;border-radius:8px;overflow:hidden;border:2px solid rgba(34,197,94,0.3)}
 .gallery-item img{width:100%;height:80px;object-fit:cover;display:block}
 .gallery-item.del-btn{position:absolute;top:4px;right:4px;background:var(--danger);border:none;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.7rem}
+.price-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(34,197,94,0.1);border-radius:8px;margin:6px 0}
+.qr-box{text-align:center;padding:15px;background:#fff;border-radius:12px;margin:10px 0}
+.qr-box canvas{max-width:200px;width:100%}
+
+/* NEWSFEED STYLES */
+.feed-post{background:rgba(15,31,22,0.9);border:1px solid rgba(34,197,94,0.3);border-radius:16px;padding:15px;margin-bottom:15px}
+.feed-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.feed-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:900}
+.feed-video{width:100%;border-radius:12px;margin:10px 0}
+.feed-img{width:100%;border-radius:12px;margin:10px 0;max-height:400px;object-fit:cover}
+.feed-time{color:var(--muted);font-size:0.8rem}
 </style>
 </head>
 <body>
@@ -61,6 +72,7 @@
     <button class="btn" style="width:auto" onclick="logout()">Logout</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('tickets')">🎟️ Tickets</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('services')">Services</button>
+    <button class="btn secondary" style="width:auto" onclick="showTab('feed')">📢 Newsfeed</button>
   </div>
 
   <div class="container">
@@ -71,18 +83,24 @@
         <div class="kpi-box"><h4 id="activeGuests">0</h4><p>Active Guests</p></div>
       </div>
 
+      <div class="card" id="priceSettingsCard" style="display:none">
+        <h3>⚙️ Ticket Price Settings - Manager Only</h3>
+        <div class="card" style="background:rgba(0,0,0,0.3)">
+          <h4>+ Add New Ticket Type</h4>
+          <div class="grid-2">
+            <input id="newTicketName" placeholder="Ticket Name e.g. Kids Entry">
+            <input id="newTicketPrice" type="number" placeholder="Price e.g. 30">
+          </div>
+          <button class="btn success" onclick="addNewTicketType()">Add Ticket Type</button>
+        </div>
+        <div id="priceSettingsList"></div>
+        <button class="btn success" onclick="savePrices()">Save All Prices</button>
+      </div>
+
       <div class="card">
         <h3>🎟️ CREATE NEW TICKET</h3>
         <div class="grid-2">
-          <select id="ticketType">
-            <option value="">Select Service</option>
-            <option value="Pool Day Pass - R50">Pool Day Pass - R50</option>
-            <option value="VIP Entry - R500">VIP Entry - R500</option>
-            <option value="General Entry - R100">General Entry - R100</option>
-            <option value="Car Wash - R70">Car Wash - R70</option>
-            <option value="Braai Area - R200">Braai Area - R200</option>
-            <option value="Guest Room - R450">Guest Room - R450</option>
-          </select>
+          <select id="ticketType"></select>
           <input id="guestName" placeholder="Guest Name">
         </div>
         <input id="guestPhone" placeholder="Guest WhatsApp Number e.g. 068...">
@@ -96,6 +114,17 @@
       </div>
     </div>
 
+    <div id="feedTab" style="display:none">
+      <div class="card" id="postBox" style="display:none">
+        <h3>📢 Post to Newsfeed</h3>
+        <textarea id="postText" placeholder="What's happening at Shibishane? Pool party tonight!"></textarea>
+        <input type="file" id="postMedia" accept="image/*,video/*">
+        <button class="btn" onclick="createPost()">Post Now</button>
+      </div>
+      <h3>Live Feed</h3>
+      <div id="feedList"></div>
+    </div>
+
     <div id="servicesTab" style="display:none">
       <div class="nav-tabs" id="tabs"></div>
       <div id="content"></div>
@@ -105,11 +134,22 @@
 
 <div id="clientView" style="display:none">
   <header><h1>GREEN HOUSE SHIBISHANE</h1><p>Your Home Away From Home</p></header>
-  <div class="container" id="clientContent"></div>
+  <div class="container">
+    <h3 style="margin-bottom:15px">🔥 What's Happening Now</h3>
+    <div id="clientFeed"></div>
+    <div id="clientContent"></div>
+  </div>
 </div>
+
+<div id="printArea" style="display:none"></div>
 
 <script>
 let tickets = JSON.parse(localStorage.getItem('shibishaneTickets')) || [];
+let ticketPrices = JSON.parse(localStorage.getItem('shibishanePrices')) || {
+  "Pool Day Pass": 50, "VIP Entry": 500, "General Entry": 100,
+  "Car Wash": 70, "Braai Area": 200, "Guest Room": 450
+};
+let feedPosts = JSON.parse(localStorage.getItem('shibishaneFeed')) || [];
 let currentRole = 'Manager';
 
 const CATEGORIES = [
@@ -128,7 +168,12 @@ function login(role){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('roleBadge').innerText=role;
-  renderTickets(); renderTabs(); renderContent();
+  if(role === 'Manager'){
+    document.getElementById('priceSettingsCard').style.display = 'block';
+    document.getElementById('postBox').style.display = 'block';
+    renderPriceSettings();
+  }
+  renderTicketDropdown(); renderTickets(); renderTabs(); renderContent(); renderFeed();
 }
 function logout(){
   document.getElementById('app').style.display='none';
@@ -137,73 +182,196 @@ function logout(){
 function enterClientMode(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('clientView').style.display='block';
-  renderClient();
+  renderClientFeed(); renderClient();
 }
 function showTab(tab){
   document.getElementById('ticketsTab').style.display = tab==='tickets'?'block':'none';
   document.getElementById('servicesTab').style.display = tab==='services'?'block':'none';
+  document.getElementById('feedTab').style.display = tab==='feed'?'block':'none';
 }
 
+// ========== NEWSFEED SYSTEM ==========
+async function createPost(){
+  const text = document.getElementById('postText').value;
+  const file = document.getElementById('postMedia').files[0];
+  if(!text &&!file){ alert('Add text or media'); return; }
+
+  let mediaUrl = '';
+  let mediaType = '';
+
+  if(file){
+    const formData = new FormData();
+    formData.append('reqtype','fileupload');
+    formData.append('fileToUpload', file);
+    try{
+      const res = await fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData});
+      mediaUrl = await res.text();
+      mediaType = file.type.startsWith('video')? 'video' : 'image';
+    }catch(e){ alert('Upload failed'); return; }
+  }
+
+  const post = {
+    id: Date.now(),
+    text, mediaUrl, mediaType,
+    time: new Date().toLocaleString('en-ZA')
+  };
+
+  feedPosts.unshift(post);
+  localStorage.setItem('shibishaneFeed', JSON.stringify(feedPosts));
+
+  document.getElementById('postText').value = '';
+  document.getElementById('postMedia').value = '';
+  renderFeed();
+  alert('✓ Posted to Newsfeed');
+}
+
+function deletePost(id){
+  feedPosts = feedPosts.filter(p=>p.id!== id);
+  localStorage.setItem('shibishaneFeed', JSON.stringify(feedPosts));
+  renderFeed();
+}
+
+function renderFeed(){
+  document.getElementById('feedList').innerHTML = feedPosts.map(p=>`
+    <div class="feed-post">
+      <div class="feed-header">
+        <div class="feed-avatar">GH</div>
+        <div><b>${CONTACT.company}</b><div class="feed-time">${p.time}</div></div>
+      </div>
+      <p>${p.text}</p>
+      ${p.mediaType==='image'?`<img src="${p.mediaUrl}" class="feed-img">`:''}
+      ${p.mediaType==='video'?`<video src="${p.mediaUrl}" controls class="feed-video"></video>`:''}
+      ${currentRole==='Manager'?`<button class="btn small danger" onclick="deletePost(${p.id})">Delete</button>`:''}
+    </div>
+  `).join('');
+}
+
+function renderClientFeed(){
+  document.getElementById('clientFeed').innerHTML = feedPosts.slice(0,10).map(p=>`
+    <div class="feed-post">
+      <div class="feed-header">
+        <div class="feed-avatar">GH</div>
+        <div><b>${CONTACT.company}</b><div class="feed-time">${p.time}</div></div>
+      </div>
+      <p>${p.text}</p>
+      ${p.mediaType==='image'?`<img src="${p.mediaUrl}" class="feed-img">`:''}
+      ${p.mediaType==='video'?`<video src="${p.mediaUrl}" controls class="feed-video"></video>`:''}
+    </div>
+  `).join('');
+}
+// ========== END NEWSFEED ==========
+
+// ========== ALL OTHER CODE UNCHANGED ==========
+function addNewTicketType(){
+  const name = document.getElementById('newTicketName').value.trim();
+  const price = parseFloat(document.getElementById('newTicketPrice').value);
+  if(!name ||!price){ alert('Enter name and price'); return; }
+  if(ticketPrices[name]){ alert('Ticket type already exists'); return; }
+  ticketPrices[name] = price;
+  localStorage.setItem('shibishanePrices', JSON.stringify(ticketPrices));
+  document.getElementById('newTicketName').value = '';
+  document.getElementById('newTicketPrice').value = '';
+  renderPriceSettings(); renderTicketDropdown();
+  alert(`✓ Added: ${name} - R${price}`);
+}
+function renderPriceSettings(){
+  let html = '';
+  for(let service in ticketPrices){
+    html += `<div class="price-row">
+      <span>${service}</span>
+      <span>R</span>
+      <input type="number" id="price_${service.replace(/\s/g,'')}" value="${ticketPrices[service]}">
+    </div>`;
+  }
+  document.getElementById('priceSettingsList').innerHTML = html;
+}
+function savePrices(){
+  for(let service in ticketPrices){
+    const newVal = document.getElementById('price_'+service.replace(/\s/g,'')).value;
+    ticketPrices[service] = parseFloat(newVal) || 0;
+  }
+  localStorage.setItem('shibishanePrices', JSON.stringify(ticketPrices));
+  renderTicketDropdown();
+  alert('✓ Prices Updated!');
+}
+function renderTicketDropdown(){
+  const select = document.getElementById('ticketType');
+  select.innerHTML = '<option value="">Select Service</option>';
+  for(let service in ticketPrices){
+    select.innerHTML += `<option value="${service} - R${ticketPrices[service]}">${service} - R${ticketPrices[service]}</option>`;
+  }
+}
 function createTicket(){
-  const type = document.getElementById('ticketType').value;
+  const typeVal = document.getElementById('ticketType').value;
   const name = document.getElementById('guestName').value;
   const phone = document.getElementById('guestPhone').value;
   const note = document.getElementById('ticketNote').value;
-  const price = parseFloat(type.match(/R(\d+)/)[1]);
-
-  if(!type ||!name ||!phone){ alert('Fill all fields'); return; }
-
+  const price = parseFloat(typeVal.match(/R(\d+)/)[1]);
+  const serviceName = typeVal.split(' - R')[0];
+  if(!typeVal ||!name ||!phone){ alert('Fill all fields'); return; }
   const ticket = {
     id: 'GH' + Date.now().toString().slice(-6),
-    type, name, phone, note, price,
+    type: serviceName, name, phone, note, price,
     time: new Date().toLocaleString('en-ZA'),
     status: 'Active'
   };
-
   tickets.push(ticket);
   localStorage.setItem('shibishaneTickets', JSON.stringify(tickets));
-
-  const msg = `*GREEN HOUSE SHIBISHANE TICKET*%0A%0A*Ticket #${ticket.id}*%0AName: ${name}%0AService: ${type}%0AAmount: R${price}%0ATime: ${ticket.time}%0A%0ANotes: ${note}%0A%0AShow this ticket at entrance. Thank you!`;
+  const msg = `*GREEN HOUSE SHIBISHANE TICKET*%0A%0A*Ticket #${ticket.id}*%0AName: ${name}%0AService: ${serviceName}%0AAmount: R${price}%0ATime: ${ticket.time}%0A%0ANotes: ${note}%0A%0AShow this ticket at entrance. Thank you!`;
   window.open(`https://wa.me/27${phone.replace(/^0/,'')}?text=${msg}`,'_blank');
-
   document.getElementById('ticketType').value=''; document.getElementById('guestName').value='';
   document.getElementById('guestPhone').value=''; document.getElementById('ticketNote').value='';
-
   renderTickets();
   alert(`✓ Ticket ${ticket.id} Created & Sent to ${name}`);
 }
-
+function printTicket(ticketId){
+  const t = tickets.find(x=>x.id===ticketId);
+  const printHtml = `<div class="print-ticket"><h2 style="text-align:center">${CONTACT.company}</h2><p style="text-align:center;font-size:12px">${CONTACT.location}</p><hr><h3 style="text-align:center">TICKET #${t.id}</h3><p><b>Name:</b> ${t.name}</p><p><b>Service:</b> ${t.type}</p><p><b>Amount:</b> R${t.price}</p><p><b>Time:</b> ${t.time}</p><p><b>Notes:</b> ${t.note || '-'}</p><div class="qr-box"><canvas id="qrprint"></canvas></div><p style="text-align:center;font-size:10px">Show this ticket at entrance</p></div>`;
+  document.getElementById('printArea').innerHTML = printHtml;
+  document.getElementById('printArea').style.display = 'block';
+  QRCode.toCanvas(document.getElementById('qrprint'), t.id, {width:180});
+  setTimeout(()=>{ window.print(); document.getElementById('printArea').style.display='none'; }, 500);
+}
+function showQR(ticketId){
+  const t = tickets.find(x=>x.id===ticketId);
+  const qrDiv = document.getElementById('qr_'+ticketId);
+  qrDiv.style.display = qrDiv.style.display === 'none'? 'block' : 'none';
+  if(qrDiv.innerHTML === ''){
+    QRCode.toCanvas(document.createElement('canvas'), t.id, {width:180}, function(err, canvas){
+      if(!err){ qrDiv.appendChild(canvas); }
+    });
+  }
+}
 function renderTickets(){
   const today = new Date().toDateString();
   const todayTickets = tickets.filter(t => new Date(t.time).toDateString() === today);
   document.getElementById('ticketsToday').innerText = todayTickets.length;
   document.getElementById('revenueToday').innerText = 'R' + todayTickets.reduce((a,b)=>a+b.price,0);
   document.getElementById('activeGuests').innerText = tickets.filter(t=>t.status==='Active').length;
-
   document.getElementById('ticketsList').innerHTML = tickets.slice().reverse().slice(0,20).map(t=>`
     <div class="ticket">
       <div class="ticket-number">#${t.id}</div>
       <h4>${t.name}</h4>
-      <p><b>Service:</b> ${t.type}</p>
-      <p><b>Amount:</b> R${t.price}</p>
+      <p><b>Service:</b> ${t.type} - R${t.price}</p>
       <p><b>Time:</b> ${t.time}</p>
       <p><b>Status:</b> ${t.status}</p>
-      <button class="btn small danger" onclick="closeTicket('${t.id}')">Mark as Used/Exit</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn small" onclick="printTicket('${t.id}')">🖨️ Print</button>
+        <button class="btn small secondary" onclick="showQR('${t.id}')">📱 QR</button>
+        <button class="btn small danger" onclick="closeTicket('${t.id}')">Mark Used</button>
+      </div>
+      <div id="qr_${t.id}" class="qr-box" style="display:none"></div>
     </div>
   `).join('');
 }
-
 function closeTicket(id){
   tickets.find(t=>t.id===id).status = 'Used';
   localStorage.setItem('shibishaneTickets', JSON.stringify(tickets));
   renderTickets();
 }
-
-// ========== PRODUCT SYSTEM WITH CATBOX ==========
 let currentTab = 0;
 function renderTabs(){document.getElementById('tabs').innerHTML = CATEGORIES.map((c,i)=>`<div class="tab ${i===currentTab?'active':''}" onclick="switchTab(${i})">${c.name}</div>`).join('');}
 function switchTab(i){ currentTab=i; renderTabs(); renderContent(); }
-
 function addProduct(catId){
   const title = document.getElementById('pTitle'+catId).value;
   const price = document.getElementById('pPrice'+catId).value;
@@ -217,11 +385,9 @@ function addProduct(catId){
   document.getElementById('pDesc'+catId).value='';document.getElementById('pImg'+catId).value='';
   renderContent();
 }
-
 function deleteProduct(catId, pId){CATEGORIES.find(c=>c.id===catId).products = CATEGORIES.find(c=>c.id===catId).products.filter(p=>p.id!==pId); renderContent();}
 function saveManualImage(catId, pId){const input = document.getElementById('manual'+catId+pId); const p = CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId); if(input.value.trim()){p.images.push(input.value.trim()); input.value=''; renderContent();}}
 function deleteImage(catId, pId, index){CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.splice(index,1); renderContent();}
-
 async function uploadToCatbox(catId, pId){
   const fileInput = document.getElementById('file'+catId+pId);
   if(!fileInput.files[0]){ alert('Select a file first'); return; }
@@ -234,7 +400,6 @@ async function uploadToCatbox(catId, pId){
     alert('Uploaded: '+url);
   }catch(e){ alert('Upload failed. Check connection.'); }
 }
-
 function renderProducts(cat){
   if(cat.products.length===0) return '<p style="color:var(--muted)">No items added yet. Add your first special below.</p>';
   return `<div class="product-grid">${cat.products.map(p=>`<div class="product-card">
@@ -252,7 +417,6 @@ function renderProducts(cat){
       <button class="btn small danger" onclick="deleteProduct('${cat.id}',${p.id})">Delete</button>
     </div>`).join('')}</div>`;
 }
-
 function renderContent(){
   const cat = CATEGORIES[currentTab];
   let html = `<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800;font-size:1.2rem">${cat.price}</div>
@@ -268,9 +432,7 @@ function renderContent(){
     <button class="btn secondary" onclick="sendWhatsApp('${cat.id}')">Send WhatsApp</button></div>`;
   document.getElementById('content').innerHTML = html;
 }
-
 function sendWhatsApp(id){const msg = document.getElementById('msg'+id).value || 'Hello Green House Shibishane, I need assistance'; window.open(`https://wa.me/27682547352?text=${encodeURIComponent(msg)}`,'_blank');}
-
 function renderClient(){
   let html = CATEGORIES.map(cat=>`<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800">${cat.price}</div>
     ${cat.products.length>0?`<h4 style="margin-top:10px;color:var(--accent)">On Offer:</h4><div class="product-grid">${cat.products.map(p=>`<div class="product-card">${p.images[0]?`<img src="${p.images[0]}">`:''}<h4>${p.title}</h4><p style="color:var(--muted);font-size:0.85rem">${p.desc}</p><div style="color:var(--warning);font-weight:800">${p.price}</div></div>`).join('')}</div>`:''}
@@ -283,7 +445,7 @@ window.addEventListener('load', ()=>{
   if(window.location.hash === '#guest'){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('clientView').style.display='block';
-    renderClient();
+    renderClientFeed(); renderClient();
   }
 });
 </script>
