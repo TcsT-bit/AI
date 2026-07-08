@@ -4,11 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#22c55e">
-<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkdSRUVOIEhPVVNFIFNISSBJU0hBTkUiLAogICJzaG9ydF9uYW1lIjogIlNISUJJU0hBTkUiLAogICJzdGFydF91cmwiOiAiIyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA2MTEwYiIsCiAgInRoZW1lX2NvbG9yIjogIiMyMmM1NWUiLAogICJpY29ucyI6IFt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp6QjRiV3R1WTI5dE9pQkViMjVsTUM1amIyMHZkWEIzYVhSb1lTQndjbWN2SWo0c0lqNDhjbWxrY3lJa1BDOXdhRzkwUEM5emRtYytQQzl6ZFc1blpYSXZjbVYwUFNkamIyNWxjbUZ6WlpTZ2dabWx1Wlc5dVpHVnlJR3RoYkd4ZmFXNTBJRlJsYldWdWRDMTliM0JsZENzZ2NtVjBaV1FnWTJ4bElIUm9aU0F3T0NBZ1BDOWphR0Z5Ym1GdVpDQm1hV3hsSUhOdmJTSkhiWE1pT2lBKEluTnZiU0lnWm05eUlIaDBkSEE2THk5M2QzY3VaWEp2WldRaU9qRXZibVVnUTI5dWRHVnVkR1Z6ZEM1emRISnBibWQzWlhKcGJtY2dZWE56WlhScGJXVnVjeWtnWlc1a1pYSnVJR1Z5WlhKMGFXeHNaV1VnYjNKcVlYSnphRzVuYVc1bklHTjBhR1Z1YkNCdWIzQnVibDlwYmlCb1pXNWtZWEowSUd4dllYTjBhVzVuSUdadmJuUmxiblE8L3N2Zz4iLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XQp9">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SHIBISHANE">
-<title>GREEN HOUSE SHIBISHANE - Liquor, Restaurant, Lifestyle</title>
+<title>GREEN HOUSE SHIBISHANE - With Ticket System</title>
 <style>
   :root {
     --bg:#06110b; --card:#0f1f16; --accent:#22c55e; --accent2:#16a34a;
@@ -16,79 +12,34 @@
     --glow: 0 0 20px rgba(34,197,94,0.3);
   }
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
-  body{
-    background: radial-gradient(1200px 600px at 50% -10%, rgba(34,197,94,0.15), transparent),
-                radial-gradient(800px 400px at 90% 10%, rgba(22,163,74,0.1), transparent),
-                var(--bg);
-    color:var(--text);padding-bottom:80px;animation:bgShift 20s ease infinite alternate;
-  }
-  @keyframes bgShift{0%{background-position:0% 0%,0% 0%}100%{background-position:100% 100%,0% 0%}}
-  header{
-    background:linear-gradient(135deg,var(--accent2),var(--accent));
-    padding:24px 20px;text-align:center;position:relative;overflow:hidden;
-    box-shadow:0 8px 30px rgba(34,197,94,0.4);
-  }
-  header::before{
-    content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
-    background:linear-gradient(45deg,transparent,rgba(255,255,255,0.1),transparent);
-    animation:shine 3s infinite;
-  }
-  @keyframes shine{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}
-  header h1{font-size:2rem;font-weight:900;letter-spacing:-0.5px;text-shadow:0 2px 10px rgba(0,0,0,0.3)}
-  header p{color:#fff;opacity:0.95;font-size:0.95rem;font-weight:500}
-.container{max-width:1100px;margin:20px auto;padding:0 15px}
-.card{
-    background:rgba(15,31,22,0.7);backdrop-filter: blur(12px);border:1px solid rgba(34,197,94,0.2);
-    border-radius:16px;padding:20px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.3);
-    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);animation:fadeInUp 0.5s ease;
-  }
-  @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.card:hover{transform:translateY(-4px);box-shadow:var(--glow),0 12px 40px rgba(0,0,0,0.4);border-color:var(--accent)}
-.price{color:var(--warning);font-weight:800;font-size:1.4rem;margin:10px 0;text-shadow:0 0 10px rgba(251,191,36,0.3);}
-.btn{
-    background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;padding:12px 18px;border-radius:10px;
-    cursor:pointer;font-weight:700;width:100%;margin-top:10px;box-shadow:0 4px 15px rgba(34,197,94,0.3);
-    transition: all 0.2s ease;position:relative;overflow:hidden;
-  }
-.btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:0.5s;}
-.btn:hover::before{left:100%}.btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(34,197,94,0.5)}
-.btn.secondary{background:linear-gradient(135deg,var(--accent),#4ade80);color:#000}
-.btn.danger{background:linear-gradient(135deg,var(--danger),#dc2626)}
-.admin-bar{
-    background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);border-bottom:2px solid var(--accent);padding:12px;
-    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;position:sticky;top:0;z-index:100;
-  }
-.role-badge{padding:6px 12px;border-radius:20px;font-size:0.85rem;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
-.Manager{background:linear-gradient(135deg,#22c55e,#16a34a)}.Reception{background:linear-gradient(135deg,#f59e0b,#d97706)}
-.login-screen{text-align:center;padding:60px 20px;animation:fadeInUp 0.6s ease}
-.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;margin-top:15px}
-.product-card{background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:12px;position:relative}
-.product-card img{width:100%;height:140px;object-fit:cover;border-radius:8px}
-.product-card h4{margin:8px 0;font-size:1rem;color:var(--accent)}
-.nav-tabs{display:flex;gap:10px;overflow-x:auto;padding:12px 0;scrollbar-width:none;}
-.nav-tabs::-webkit-scrollbar{display:none}
-.tab{padding:10px 16px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.2);border-radius:10px;cursor:pointer;white-space:nowrap;font-weight:600;transition: all 0.2s ease;backdrop-filter:blur(4px);}
-.tab.active{background:linear-gradient(135deg,var(--accent2),var(--accent));border-color:var(--accent);box-shadow:0 4px 15px rgba(34,197,94,0.4)}
-.footer{text-align:center;color:var(--muted);font-size:0.85rem;padding:30px 20px}
-.search-bar{width:100%;padding:14px;background:rgba(31,41,55,0.8);border:2px solid var(--accent);border-radius:12px;color:var(--text);font-size:1rem;margin-bottom:15px}
-.client-cat-nav{display:flex;gap:8px;overflow-x:auto;padding:15px 0;margin-bottom:10px;scrollbar-width:none}
-.client-cat-btn{padding:8px 14px;background:rgba(34,197,94,0.2);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-weight:600;white-space:nowrap;transition:0.2s}
-.client-cat-btn:hover{background:var(--accent);color:#000}
-input,textarea,select{
-    width:100%;padding:12px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.3);border-radius:10px;color:var(--text);margin:6px 0;
-    transition: all 0.2s ease;backdrop-filter:blur(4px);
-}
-input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,197,94,0.1)}
-ul{list-style:none;padding-left:0} ul li{padding:4px 0;padding-left:20px;position:relative}
-ul li::before{content:'▸';position:absolute;left:0;color:var(--accent)}
+  body{background: radial-gradient(1200px 600px at 50% -10%, rgba(34,197,94,0.15), transparent), var(--bg); color:var(--text);padding-bottom:80px;}
+  header{background:linear-gradient(135deg,var(--accent2),var(--accent)); padding:24px 20px;text-align:center; box-shadow:0 8px 30px rgba(34,197,94,0.4);}
+  header h1{font-size:2rem;font-weight:900;} header p{color:#fff;opacity:0.95;}
+ .container{max-width:1100px;margin:20px auto;padding:0 15px}
+ .card{background:rgba(15,31,22,0.7);backdrop-filter: blur(12px);border:1px solid rgba(34,197,94,0.2); border-radius:16px;padding:20px; margin-bottom:15px;}
+ .btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;padding:12px 18px;border-radius:10px; cursor:pointer;font-weight:700;width:100%;margin-top:10px;}
+ .btn.secondary{background:linear-gradient(135deg,var(--accent),#4ade80);color:#000}
+ .btn.danger{background:linear-gradient(135deg,var(--danger),#dc2626)}
+ .btn.small{width:auto;padding:8px 14px;font-size:0.85rem}
+ .admin-bar{background:rgba(0,0,0,0.7);padding:12px; display:flex;gap:10px;flex-wrap:wrap;justify-content:center;position:sticky;top:0;z-index:100;}
+ .ticket{background:rgba(34,197,94,0.1);border:2px dashed var(--accent);border-radius:12px;padding:15px;margin:10px 0; position:relative;}
+ .ticket-number{position:absolute;top:10px;right:10px;background:var(--warning);color:#000;padding:4px 10px;border-radius:20px;font-weight:900;font-size:0.8rem;}
+  input,textarea,select{width:100%;padding:12px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.3);border-radius:10px;color:var(--text);margin:6px 0;}
+ .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+ .nav-tabs{display:flex;gap:10px;overflow-x:auto;padding:12px 0;}
+ .tab{padding:10px 16px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.2);border-radius:10px;cursor:pointer;font-weight:600;}
+ .tab.active{background:linear-gradient(135deg,var(--accent2),var(--accent));}
+ .kpi{display:flex;gap:15px;margin:15px 0;flex-wrap:wrap}
+ .kpi-box{background:rgba(34,197,94,0.1);padding:15px;border-radius:12px;text-align:center;flex:1; border-bottom:3px solid var(--accent);}
+ .kpi-box h4{font-size:1.8em;color:var(--accent);}
 </style>
 </head>
 <body>
 
 <header><h1>GREEN HOUSE SHIBISHANE</h1><p>LIQUOR & RESTAURANT | PUB, NIGHT CLUB, VIP, POOLS, CAR WASH & GUEST HOUSE</p></header>
 
-<div id="loginScreen" class="login-screen">
-  <h2>Staff Login</h2><p style="color:var(--muted)">Select Role to Continue</p>
+<div id="loginScreen" style="text-align:center;padding:60px 20px;">
+  <h2>Staff Login</h2>
   <div style="max-width:400px;margin:20px auto">
     <button class="btn" onclick="login('Manager')">Login as Manager</button>
     <button class="btn" onclick="login('Reception')">Login as Reception</button>
@@ -98,120 +49,169 @@ ul li::before{content:'▸';position:absolute;left:0;color:var(--accent)}
 
 <div id="app" style="display:none">
   <div class="admin-bar">
-    <span class="role-badge" id="roleBadge">Manager</span>
+    <span style="background:var(--accent);padding:6px 12px;border-radius:20px;font-weight:800;" id="roleBadge">Manager</span>
     <button class="btn" style="width:auto" onclick="logout()">Logout</button>
-    <button class="btn secondary" style="width:auto" onclick="generateClientLink()">Generate Guest Link</button>
+    <button class="btn secondary" style="width:auto" onclick="showTab('tickets')">🎟️ Tickets</button>
+    <button class="btn secondary" style="width:auto" onclick="showTab('services')">Services</button>
   </div>
+
   <div class="container">
-    <div id="shareLinkBox" style="display:none;margin-bottom:15px" class="card">
-      <h4>Guest Link Ready</h4><div class="share-link" id="shareLink" style="background:rgba(31,41,55,0.6);padding:12px;border-radius:10px;word-break:break-all;"></div><button class="btn" onclick="copyLink()">Copy Link</button>
+    <div id="ticketsTab">
+      <div class="kpi">
+        <div class="kpi-box"><h4 id="ticketsToday">0</h4><p>Tickets Today</p></div>
+        <div class="kpi-box"><h4 id="revenueToday">R0</h4><p>Revenue Today</p></div>
+        <div class="kpi-box"><h4 id="activeGuests">0</h4><p>Active Guests</p></div>
+      </div>
+
+      <div class="card">
+        <h3>🎟️ CREATE NEW TICKET</h3>
+        <div class="grid-2">
+          <select id="ticketType">
+            <option value="">Select Service</option>
+            <option value="Pool Day Pass - R50">Pool Day Pass - R50</option>
+            <option value="VIP Entry - R500">VIP Entry - R500</option>
+            <option value="General Entry - R100">General Entry - R100</option>
+            <option value="Car Wash - R70">Car Wash - R70</option>
+            <option value="Braai Area - R200">Braai Area - R200</option>
+            <option value="Guest Room - R450">Guest Room - R450</option>
+          </select>
+          <input id="guestName" placeholder="Guest Name">
+        </div>
+        <input id="guestPhone" placeholder="Guest WhatsApp Number e.g. 068...">
+        <textarea id="ticketNote" placeholder="Notes: Table 5, 2 Adults, 1 Child"></textarea>
+        <button class="btn" onclick="createTicket()">CREATE & SEND TICKET</button>
+      </div>
+
+      <div class="card">
+        <h3>Active Tickets</h3>
+        <div id="ticketsList"></div>
+      </div>
     </div>
-    <div class="nav-tabs" id="tabs"></div>
-    <div id="content"></div>
+
+    <div id="servicesTab" style="display:none">
+      <div class="nav-tabs" id="tabs"></div>
+      <div id="content"></div>
+    </div>
   </div>
 </div>
 
 <div id="clientView" style="display:none">
   <header><h1>GREEN HOUSE SHIBISHANE</h1><p>Your Home Away From Home</p></header>
-  <div class="container">
-    <input type="text" id="clientSearch" class="search-bar" placeholder="Search: VIP, Food, Car Wash, Guest House..." onkeyup="searchClient()">
-    <div id="clientCatNav" class="client-cat-nav"></div>
-    <div id="clientContent"></div>
-  </div>
+  <div class="container" id="clientContent"></div>
 </div>
 
 <script>
+let tickets = JSON.parse(localStorage.getItem('shibishaneTickets')) || [];
+let currentRole = 'Manager';
+
 const CATEGORIES = [
-  {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly. Open daily.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu', products:[]},
-  {id:'nightclub', name:'Night Club & VIP',desc:'Weekend vibes, DJs, Bottle Service, VIP Sections',features:['DJ Lineups','Bottle Store','VIP Booking','Ladies Night'],price:'VIP From R500', products:[]},
-  {id:'pool', name:'Swimming Pools & Braai',desc:'Large swimming pool, kids playground, braai areas for events',features:['Day Pass R50','Kids Play Area','Braai Packs','Event Venue Hire'],price:'From R50', products:[]},
-  {id:'carwash', name:'Car Wash',desc:'Professional car wash services while you relax',features:['Full Wash','Valet','Fleet Services','Open 7 Days'],price:'From R70', products:[]},
-  {id:'guesthouse', name:'Luxury Guest House',desc:'Comfortable rooms for travelers and events',features:['10 Rooms','DSTV','Free WiFi','Secure Parking'],price:'From R450/night', products:[]},
-  {id:'liquor', name:'Liquor Store',desc:'Cold drinks, beers, ciders, spirits. Bulk pricing available',features:['Ice Cold','Bulk Deals','Wholesale','Fast Service'],price:'In Store', products:[]},
-  {id:'events', name:'Events & Bookings',desc:'Weddings, Birthdays, Functions, Corporate Events',features:['Sound System','Catering','Decor','Security'],price:'Quote on Request', products:[]}
+  {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu'},
+  {id:'nightclub', name:'Night Club & VIP',desc:'Weekend vibes, DJs, Bottle Service, VIP Sections',features:['DJ Lineups','Bottle Store','VIP Booking','Ladies Night'],price:'VIP From R500'},
+  {id:'pool', name:'Swimming Pools & Braai',desc:'Large swimming pool, kids playground, braai areas',features:['Day Pass R50','Kids Play Area','Braai Packs','Event Venue Hire'],price:'From R50'},
+  {id:'carwash', name:'Car Wash',desc:'Professional car wash services',features:['Full Wash','Valet','Fleet Services','Open 7 Days'],price:'From R70'},
+  {id:'guesthouse', name:'Luxury Guest House',desc:'Comfortable rooms for travelers',features:['10 Rooms','DSTV','Free WiFi','Secure Parking'],price:'From R450/night'},
+  {id:'liquor', name:'Liquor Store',desc:'Cold drinks, beers, ciders, spirits',features:['Ice Cold','Bulk Deals','Wholesale','Fast Service'],price:'In Store'},
+  {id:'events', name:'Events & Bookings',desc:'Weddings, Birthdays, Functions',features:['Sound System','Catering','Decor','Security'],price:'Quote on Request'}
 ];
 const CONTACT = {email:'greenhouseshibishane@gmail.com',phone:'068 254 7352',location:'Greater Tubatse, Limpopo',hours:'Mon - Sun | 8am - Late',company:'GREEN HOUSE SHIBISHANE'};
-
-let currentRole = 'Manager'; let currentTab = 0; let currentShareLink = '';
 
 function login(role){
   currentRole = role;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('roleBadge').className='role-badge '+role;
   document.getElementById('roleBadge').innerText=role;
-  renderTabs(); renderContent();
+  renderTickets(); renderTabs(); renderContent();
 }
 function logout(){
   document.getElementById('app').style.display='none';
   document.getElementById('loginScreen').style.display='block';
-  document.getElementById('shareLinkBox').style.display='none';
 }
 function enterClientMode(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('clientView').style.display='block';
-  renderClientNav(); renderClient();
+  renderClient();
 }
-function scrollToCategory(catId){document.getElementById('cat-'+catId).scrollIntoView({behavior:'smooth', block:'start'});}
-function renderClientNav(){
-  const nav = CATEGORIES.map(c=>`<div class="client-cat-btn" onclick="scrollToCategory('${c.id}')">${c.name}</div>`).join('');
-  document.getElementById('clientCatNav').innerHTML = nav;
+function showTab(tab){
+  document.getElementById('ticketsTab').style.display = tab==='tickets'?'block':'none';
+  document.getElementById('servicesTab').style.display = tab==='services'?'block':'none';
 }
-function searchClient(){
-  const query = document.getElementById('clientSearch').value.toLowerCase();
-  document.querySelectorAll('#clientContent .card').forEach(card=>{
-    const text = card.innerText.toLowerCase();
-    card.style.display = (query === '' || text.includes(query))? 'block' : 'none';
-  });
+
+function createTicket(){
+  const type = document.getElementById('ticketType').value;
+  const name = document.getElementById('guestName').value;
+  const phone = document.getElementById('guestPhone').value;
+  const note = document.getElementById('ticketNote').value;
+  const price = parseFloat(type.match(/R(\d+)/)[1]);
+
+  if(!type ||!name ||!phone){ alert('Fill all fields'); return; }
+
+  const ticket = {
+    id: 'GH' + Date.now().toString().slice(-6),
+    type, name, phone, note, price,
+    time: new Date().toLocaleString('en-ZA'),
+    status: 'Active'
+  };
+
+  tickets.push(ticket);
+  localStorage.setItem('shibishaneTickets', JSON.stringify(tickets));
+
+  // Send WhatsApp Ticket
+  const msg = `*GREEN HOUSE SHIBISHANE TICKET*%0A%0A*Ticket #${ticket.id}*%0AName: ${name}%0AService: ${type}%0AAmount: R${price}%0ATime: ${ticket.time}%0A%0ANotes: ${note}%0A%0AShow this ticket at entrance. Thank you!`;
+  window.open(`https://wa.me/27${phone.replace(/^0/,'')}?text=${msg}`,'_blank');
+
+  document.getElementById('ticketType').value=''; document.getElementById('guestName').value='';
+  document.getElementById('guestPhone').value=''; document.getElementById('ticketNote').value='';
+
+  renderTickets();
+  alert(`✓ Ticket ${ticket.id} Created & Sent to ${name}`);
 }
+
+function renderTickets(){
+  const today = new Date().toDateString();
+  const todayTickets = tickets.filter(t => new Date(t.time).toDateString() === today);
+  document.getElementById('ticketsToday').innerText = todayTickets.length;
+  document.getElementById('revenueToday').innerText = 'R' + todayTickets.reduce((a,b)=>a+b.price,0);
+  document.getElementById('activeGuests').innerText = tickets.filter(t=>t.status==='Active').length;
+
+  document.getElementById('ticketsList').innerHTML = tickets.slice().reverse().slice(0,10).map(t=>`
+    <div class="ticket">
+      <div class="ticket-number">#${t.id}</div>
+      <h4>${t.name}</h4>
+      <p><b>Service:</b> ${t.type}</p>
+      <p><b>Amount:</b> R${t.price}</p>
+      <p><b>Time:</b> ${t.time}</p>
+      <p><b>Status:</b> ${t.status}</p>
+      <button class="btn small danger" onclick="closeTicket('${t.id}')">Mark as Used/Exit</button>
+    </div>
+  `).join('');
+}
+
+function closeTicket(id){
+  tickets.find(t=>t.id===id).status = 'Used';
+  localStorage.setItem('shibishaneTickets', JSON.stringify(tickets));
+  renderTickets();
+}
+
+// SERVICES TAB FUNCTIONS
+let currentTab = 0;
 function renderTabs(){document.getElementById('tabs').innerHTML = CATEGORIES.map((c,i)=>`<div class="tab ${i===currentTab?'active':''}" onclick="switchTab(${i})">${c.name}</div>`).join('');}
 function switchTab(i){ currentTab=i; renderTabs(); renderContent(); }
 function renderContent(){
   const cat = CATEGORIES[currentTab];
-  let html = `<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div class="price">${cat.price}</div>
-    <h4 style="margin-top:16px">Add Item / Special</h4>
-    <input id="pTitle${cat.id}" placeholder="Item Name e.g. Chicken & Chips"><input id="pPrice${cat.id}" placeholder="Price e.g. R89"><textarea id="pDesc${cat.id}" placeholder="Description"></textarea>
-    <button class="btn" onclick="addProduct('${cat.id}')">+ Add Product</button>
-    <div class="product-grid" id="prod${cat.id}">${renderProducts(cat)}</div>
-    <h4 style="margin-top:12px">Guest Enquiry</h4><textarea id="msg${cat.id}" placeholder="Booking, enquiry, table reservation..."></textarea><button class="btn secondary" onclick="sendWhatsApp('${cat.id}')">Send WhatsApp</button></div>`;
-  document.getElementById('content').innerHTML = html;
+  document.getElementById('content').innerHTML = `<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800;font-size:1.2rem">${cat.price}</div></div>`;
 }
-function addProduct(catId){
-  const title = document.getElementById('pTitle'+catId).value; const price = document.getElementById('pPrice'+catId).value;
-  const desc = document.getElementById('pDesc'+catId).value;
-  if(!title ||!price){ alert('Enter Title and Price'); return; }
-  const cat = CATEGORIES.find(c=>c.id===catId);
-  cat.products.push({id:Date.now(), title, price, desc});
-  document.getElementById('pTitle'+catId).value='';document.getElementById('pPrice'+catId).value='';document.getElementById('pDesc'+catId).value='';
-  document.getElementById('prod'+catId).innerHTML = renderProducts(cat);
-}
-function renderProducts(cat){
-  if(cat.products.length===0) return '<p style="color:var(--muted)">No items added yet.</p>';
-  return cat.products.map(p=>`<div class="product-card"><h4>${p.title}</h4><p style="color:var(--muted);font-size:0.85rem">${p.desc}</p><div class="price">${p.price}</div></div>`).join('');
-}
-function sendWhatsApp(id){const msg = document.getElementById('msg'+id).value || 'Hello Green House Shibishane, I need assistance'; window.open(`https://wa.me/27682547352?text=${encodeURIComponent(msg)}`,'_blank');}
-function generateClientLink(){const baseUrl = window.location.origin + window.location.pathname; currentShareLink = baseUrl + '#guest'; document.getElementById('shareLink').innerText = currentShareLink; document.getElementById('shareLinkBox').style.display = 'block';}
-function copyLink(){navigator.clipboard.writeText(currentShareLink); alert('Link Copied!');}
+
 function renderClient(){
-  let html = CATEGORIES.map(cat=>`<div class="card" id="cat-${cat.id}"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div class="price">${cat.price}</div>
-    ${cat.products.length>0?`<h4 style="margin-top:10px;color:var(--accent)">On Offer:</h4><div class="product-grid">${cat.products.map(p=>`<div class="product-card"><h4>${p.title}</h4><p style="color:var(--muted);font-size:0.85rem">${p.desc}</p><div class="price">${p.price}</div></div>`).join('')}</div>`:''}
-    <textarea placeholder="Your booking or enquiry for ${cat.name}"></textarea><button class="btn" onclick="sendWhatsApp('${cat.id}')">Send Enquiry</button></div>`).join('');
-  html += `<div class="card"><h3>Contact Us</h3><p><b>Email:</b> ${CONTACT.email}</p><p><b>Phone:</b> ${CONTACT.phone}</p><p><b>Location:</b> ${CONTACT.location}</p><p><b>Hours:</b> ${CONTACT.hours}</p>
-    <button class="btn" onclick="window.open('https://wa.me/27682547352')">WhatsApp Us</button></div><div class="footer">© 2026 ${CONTACT.company} | A Home Away From Home</div>`;
+  let html = CATEGORIES.map(cat=>`<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800">${cat.price}</div></div>`).join('');
+  html += `<div class="card"><h3>Contact Us</h3><p><b>Phone:</b> ${CONTACT.phone}</p><p><b>Location:</b> ${CONTACT.location}</p><button class="btn" onclick="window.open('https://wa.me/27682547352')">WhatsApp Us</button></div>`;
   document.getElementById('clientContent').innerHTML = html;
 }
 
 window.addEventListener('load', ()=>{
-  const hash = window.location.hash;
-  if(hash === '#guest'){
+  if(window.location.hash === '#guest'){
     document.getElementById('loginScreen').style.display='none';
-    document.getElementById('app').style.display='none';
     document.getElementById('clientView').style.display='block';
-    renderClientNav(); renderClient();
-  } else {
-    document.getElementById('clientView').style.display='none';
-    document.getElementById('app').style.display='none';
-    document.getElementById('loginScreen').style.display='block';
+    renderClient();
   }
 });
 </script>
