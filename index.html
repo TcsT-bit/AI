@@ -189,10 +189,8 @@ let ticketPrices = JSON.parse(localStorage.getItem('shibishanePrices')) || {
 };
 let feedPosts = JSON.parse(localStorage.getItem('shibishaneFeed')) || [];
 let invoices = JSON.parse(localStorage.getItem('shibishaneInvoices')) || [];
-let currentRole = 'Manager';
-let invoiceItemCount = 0;
-
-const CATEGORIES = [
+// ENHANCED: LOAD CATEGORIES FROM LOCALSTORAGE
+let CATEGORIES = JSON.parse(localStorage.getItem('shibishaneCategories')) || [
   {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu', products:[]},
   {id:'nightclub', name:'Night Club & VIP',desc:'Weekend vibes, DJs, Bottle Service, VIP Sections',features:['DJ Lineups','Bottle Store','VIP Booking','Ladies Night'],price:'VIP From R500', products:[]},
   {id:'pool', name:'Swimming Pools & Braai',desc:'Large swimming pool, kids playground, braai areas',features:['Day Pass R50','Kids Play Area','Braai Packs','Event Venue Hire'],price:'From R50', products:[]},
@@ -201,7 +199,12 @@ const CATEGORIES = [
   {id:'liquor', name:'Liquor Store',desc:'Cold drinks, beers, ciders, spirits',features:['Ice Cold','Bulk Deals','Wholesale','Fast Service'],price:'In Store', products:[]},
   {id:'events', name:'Events & Bookings',desc:'Weddings, Birthdays, Functions',features:['Sound System','Catering','Decor','Security'],price:'Quote on Request', products:[]}
 ];
+let currentRole = 'Manager';
+let invoiceItemCount = 0;
+
 const CONTACT = {email:'greenhouseshibishane@gmail.com',phone:'068 254 7352',location:'Greater Tubatse, Limpopo',hours:'Mon - Sun | 8am - Late',company:'GREEN HOUSE SHIBISHANE'};
+
+function saveCategories(){ localStorage.setItem('shibishaneCategories', JSON.stringify(CATEGORIES)); } // NEW
 
 function login(role){
   currentRole = role;
@@ -495,13 +498,14 @@ function addProduct(catId){
   const cat = CATEGORIES.find(c=>c.id===catId);
   const newImages = imgLink.trim()? [imgLink.trim()] : [];
   cat.products.push({id:Date.now(), title, price, desc, images:newImages});
+  saveCategories(); // NEW
   document.getElementById('pTitle'+catId).value='';document.getElementById('pPrice'+catId).value='';
   document.getElementById('pDesc'+catId).value='';document.getElementById('pImg'+catId).value='';
   renderContent();
 }
-function deleteProduct(catId, pId){CATEGORIES.find(c=>c.id===catId).products = CATEGORIES.find(c=>c.id===catId).products.filter(p=>p.id!==pId); renderContent();}
-function saveManualImage(catId, pId){const input = document.getElementById('manual'+catId+pId); const p = CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId); if(input.value.trim()){p.images.push(input.value.trim()); input.value=''; renderContent();}}
-function deleteImage(catId, pId, index){CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.splice(index,1); renderContent();}
+function deleteProduct(catId, pId){CATEGORIES.find(c=>c.id===catId).products = CATEGORIES.find(c=>c.id===catId).products.filter(p=>p.id!==pId); saveCategories(); renderContent();} // NEW
+function saveManualImage(catId, pId){const input = document.getElementById('manual'+catId+pId); const p = CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId); if(input.value.trim()){p.images.push(input.value.trim()); input.value=''; saveCategories(); renderContent();}} // NEW
+function deleteImage(catId, pId, index){CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.splice(index,1); saveCategories(); renderContent();} // NEW
 async function uploadToCatbox(catId, pId){
   const fileInput = document.getElementById('file'+catId+pId);
   if(!fileInput.files[0]){ alert('Select a file first'); return; }
@@ -510,6 +514,7 @@ async function uploadToCatbox(catId, pId){
     const res = await fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData});
     const url = await res.text();
     CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.push(url);
+    saveCategories(); // NEW
     fileInput.value=''; renderContent();
     alert('Uploaded: '+url);
   }catch(e){ alert('Upload failed. Check connection.'); }
@@ -531,6 +536,7 @@ function renderProducts(cat){
       <button class="btn small danger" onclick="deleteProduct('${cat.id}',${p.id})">Delete</button>
     </div>`).join('')}</div>`;
 }
+
 function renderContent(){
   const cat = CATEGORIES[currentTab];
   let html = `<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800;font-size:1.2rem">${cat.price}</div>
@@ -557,6 +563,41 @@ function renderClient(){
   document.getElementById('clientContent').innerHTML = html;
 }
 
+function renderFeed(){
+  document.getElementById('feedList').innerHTML = feedPosts.map(p=>`
+    <div class="feed-post">
+      <div class="feed-header">
+        <div class="feed-avatar">GH</div>
+        <div><b>${CONTACT.company}</b><div class="feed-time">${p.time}</div></div>
+      </div>
+      <p>${p.text}</p>
+      ${p.mediaType==='image'?`<img src="${p.mediaUrl}" class="feed-img">`:''}
+      ${p.mediaType==='video'?`<video src="${p.mediaUrl}" controls class="feed-video"></video>`:''}
+      ${currentRole==='Manager'?`<button class="btn small danger" onclick="deletePost(${p.id})">Delete</button>`:''}
+    </div>
+  `).join('');
+}
+
+function renderClientFeed(){
+  document.getElementById('clientFeed').innerHTML = feedPosts.slice(0,10).map(p=>`
+    <div class="feed-post">
+      <div class="feed-header">
+        <div class="feed-avatar">GH</div>
+        <div><b>${CONTACT.company}</b><div class="feed-time">${p.time}</div></div>
+      </div>
+      <p>${p.text}</p>
+      ${p.mediaType==='image'?`<img src="${p.mediaUrl}" class="feed-img">`:''}
+      ${p.mediaType==='video'?`<video src="${p.mediaUrl}" controls class="feed-video"></video>`:''}
+    </div>
+  `).join('');
+}
+
+function deletePost(id){
+  feedPosts = feedPosts.filter(p=>p.id!== id);
+  localStorage.setItem('shibishaneFeed', JSON.stringify(feedPosts));
+  renderFeed();
+}
+
 window.addEventListener('load', ()=>{
   if(window.location.hash === '#guest'){
     document.getElementById('loginScreen').style.display='none';
@@ -567,4 +608,4 @@ window.addEventListener('load', ()=>{
 
 </script>
 </body>
-      </html>
+</html>
