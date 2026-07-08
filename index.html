@@ -215,11 +215,25 @@ const CONTACT = {email:'greenhouseshibishane@gmail.com',phone:'068 254 7352',loc
 
 function saveCategories(){ localStorage.setItem('shibishaneCategories', JSON.stringify(CATEGORIES)); }
 
-// ========== ENHANCEMENT: CLIENT LINK + PWA ==========
+// ========== ENHANCEMENT: CLIENT LINK + PWA + AUTO DELETE TICKETS ==========
 function copyClientLink(){
   const link = window.location.origin + window.location.pathname + '#guest';
   navigator.clipboard.writeText(link);
   alert('✓ Client Link Copied!\n' + link);
+}
+
+function autoDeleteOldTickets(){
+  const now = Date.now();
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+  const oldCount = tickets.length;
+  tickets = tickets.filter(t => {
+    const ticketTime = new Date(t.time).getTime();
+    return (now - ticketTime) < twentyFourHours;
+  });
+  if(tickets.length!== oldCount){
+    localStorage.setItem('shibishaneTickets', JSON.stringify(tickets));
+    console.log(`✓ Auto-deleted ${oldCount - tickets.length} old tickets`);
+  }
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -237,6 +251,7 @@ function installPWA(){
 // ========== END ENHANCEMENT ==========
 
 function login(role){
+  autoDeleteOldTickets(); // ENHANCED
   currentRole = role;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -491,6 +506,7 @@ function showQR(ticketId){
   }
 }
 function renderTickets(){
+  autoDeleteOldTickets(); // ENHANCED
   const today = new Date().toDateString();
   const todayTickets = tickets.filter(t => new Date(t.time).toDateString() === today);
   document.getElementById('ticketsToday').innerText = todayTickets.length;
@@ -586,9 +602,16 @@ function renderContent(){
 
 function sendWhatsApp(id){const msg = document.getElementById('msg'+id).value || 'Hello Green House Shibishane, I need assistance'; window.open(`https://wa.me/27682547352?text=${encodeURIComponent(msg)}`,'_blank');}
 
+// ENHANCED: CLIENT NOW SEES ALL PRODUCT IMAGES
 function renderClient(){
   let html = CATEGORIES.map(cat=>`<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800">${cat.price}</div>
-    ${cat.products.length>0?`<h4 style="margin-top:10px;color:var(--accent)">On Offer:</h4><div class="product-grid">${cat.products.map(p=>`<div class="product-card">${p.images[0]?`<img src="${p.images[0]}">`:''}<h4>${p.title}</h4><p style="color:var(--muted);font-size:0.85rem">${p.desc}</p><div style="color:var(--warning);font-weight:800">${p.price}</div></div>`).join('')}</div>`:''}
+    ${cat.products.length>0?`<h4 style="margin-top:10px;color:var(--accent)">On Offer:</h4><div class="product-grid">${cat.products.map(p=>`<div class="product-card">
+      ${p.images[0]?`<img src="${p.images[0]}">`:''}
+      <h4>${p.title}</h4>
+      <p style="color:var(--muted);font-size:0.85rem">${p.desc}</p>
+      <div style="color:var(--warning);font-weight:800">${p.price}</div>
+      ${p.images.length>1?`<div class="gallery-grid">${p.images.map(img=>`<div class="gallery-item"><img src="${img}"></div>`).join('')}</div>`:''}
+    </div>`).join('')}</div>`:''}
     </div>`).join('');
   html += `<div class="card"><h3>Contact Us</h3><p><b>Phone:</b> ${CONTACT.phone}</p><p><b>Location:</b> ${CONTACT.location}</p><button class="btn" onclick="window.open('https://wa.me/27682547352')">WhatsApp Us</button></div>`;
   document.getElementById('clientContent').innerHTML = html;
@@ -629,8 +652,9 @@ function deletePost(id){
   renderFeed();
 }
 
-// ENHANCED: AUTO LOAD CLIENT VIEW ON REFRESH
+// ENHANCED: AUTO LOAD CLIENT VIEW ON REFRESH + AUTO DELETE
 window.addEventListener('load', ()=>{
+  autoDeleteOldTickets(); // ENHANCED
   if(window.location.hash === '#guest'){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('clientView').style.display='block';
