@@ -273,6 +273,8 @@ function installPWA(){
   if(deferredPrompt){
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => { document.getElementById('installBtn').style.display = 'none'; });
+  } else {
+    alert('📲 To install: Chrome Menu > "Install app" or "Add to Home Screen"\n\nThis works best on Android/Chrome');
   }
 }
 // ========== END ENHANCEMENT ==========
@@ -300,6 +302,7 @@ function enterClientMode(){
   window.location.hash = 'guest';
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('clientView').style.display='block';
+  document.getElementById('installBtn').style.display = 'block';
   renderClientFeed(); renderClient();
 }
 function showTab(tab){
@@ -543,12 +546,14 @@ function renderTickets(){
   document.getElementById('activeGuests').innerText = tickets.filter(t=>t.status==='Active').length;
   document.getElementById('ticketsList').innerHTML = tickets.slice().reverse().slice(0,20).map(t=>`
     <div class="ticket">
-      <div class="ticket-number">#${t.id}</div>
-      <h4>${t.name}</h4>
+      <div class="ticket-number">#${t.name}</h4>
       <p><b>Service:</b> ${t.type} - R${t.price}</p>
       <p><b>Time:</b> ${t.time}</p>
       <p><b>Status:</b> ${t.status}</p>
-      <button class="btn small danger" onclick="closeTicket('${t.id}')">Mark Used</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn small" onclick="printTicket('${t.id}')">🖨️ Print</button>
+        <button class="btn small secondary" onclick="showQR('${t.id}')">📱 QR</button>
+        <button class="btn small danger" onclick="closeTicket('${t.id}')">Mark Used</button>
       </div>
       <div id="qr_${t.id}" class="qr-box" style="display:none"></div>
     </div>
@@ -686,6 +691,7 @@ window.addEventListener('load', ()=>{
   if(window.location.hash === '#guest'){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('clientView').style.display='block';
+    document.getElementById('installBtn').style.display = 'block';
     renderClientFeed(); renderClient();
   }
 });
