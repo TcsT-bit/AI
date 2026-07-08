@@ -87,6 +87,7 @@
     <button class="btn secondary" style="width:auto" onclick="showTab('invoices')">📄 Invoices</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('services')">Services</button>
     <button class="btn secondary" style="width:auto" onclick="showTab('feed')">📢 Newsfeed</button>
+    <button class="btn secondary" id="toggleLinkBtn" style="width:auto;background:var(--success);color:#000;display:none" onclick="toggleClientLink()">🔗 Enable Link</button>
     <button class="btn secondary" id="copyLinkBtn" style="width:auto;background:var(--warning);color:#000;display:none" onclick="copyClientLink()">📱 Copy Client Link</button>
   </div>
 
@@ -221,11 +222,13 @@ function toggleClientLink(){
   clientLinkEnabled =!clientLinkEnabled;
   localStorage.setItem('shibishaneClientLinkEnabled', JSON.stringify(clientLinkEnabled));
   document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none';
+  document.getElementById('toggleLinkBtn').innerText = clientLinkEnabled? '🔒 Disable Link' : '🔗 Enable Link';
+  document.getElementById('toggleLinkBtn').style.background = clientLinkEnabled? 'var(--danger)' : 'var(--success)';
   alert(clientLinkEnabled? '✓ Client Link ENABLED' : '✗ Client Link DISABLED');
 }
 
 function copyClientLink(){
-  if(!clientLinkEnabled){ alert('Enable Client Link first in Settings'); return; }
+  if(!clientLinkEnabled){ alert('Enable Client Link first'); return; }
   const link = window.location.origin + window.location.pathname + '#guest';
   navigator.clipboard.writeText(link);
   alert('✓ Client Link Copied!\n' + link);
@@ -272,7 +275,7 @@ function login(role){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('roleBadge').innerText=role;
-  document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none'; // NEW
+  if(role === 'Manager'){ document.getElementById('toggleLinkBtn').style.display = 'block'; document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none'; } // ENHANCED
   if(role === 'Manager'){
     document.getElementById('priceSettingsCard').style.display = 'block';
     document.getElementById('postBox').style.display = 'block';
@@ -614,8 +617,6 @@ function renderContent(){
       <input id="pImg${cat.id}" placeholder="Paste Catbox.moe Image Link Here - Optional">
       <button class="btn" onclick="addProduct('${cat.id}')">+ Add Product</button>
     </div>
-    <h4 style="margin-top:12px">Admin Controls</h4>
-    <button class="btn ${clientLinkEnabled?'danger':'secondary'}" onclick="toggleClientLink()">${clientLinkEnabled?'Disable':'Enable'} Client Link</button>
     <h4 style="margin-top:12px">Guest Enquiry</h4><textarea id="msg${cat.id}" placeholder="Booking, enquiry, table reservation..."></textarea>
     <button class="btn secondary" onclick="sendWhatsApp('${cat.id}')">Send WhatsApp</button></div>`;
   document.getElementById('content').innerHTML = html;
