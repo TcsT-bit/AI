@@ -91,6 +91,11 @@
     <button class="btn secondary" id="copyLinkBtn" style="width:auto;background:var(--warning);color:#000;display:none" onclick="copyClientLink()">📱 Copy Client Link</button>
   </div>
 
+  <div id="clientLinkDisplay" style="display:none;background:rgba(251,191,36,0.1);border:1px dashed var(--warning);padding:10px;margin:10px 15px;border-radius:10px">
+    <p style="font-size:0.85rem;color:var(--warning);margin-bottom:6px">📱 CLIENT LINK - Highlight to Copy:</p>
+    <input id="clientLinkBox" readonly style="background:#000;color:var(--warning);font-weight:700;border:1px solid var(--warning)">
+  </div>
+
   <div class="container">
     <div id="ticketsTab">
       <div class="kpi">
@@ -199,8 +204,7 @@ let ticketPrices = JSON.parse(localStorage.getItem('shibishanePrices')) || {
 };
 let feedPosts = JSON.parse(localStorage.getItem('shibishaneFeed')) || [];
 let invoices = JSON.parse(localStorage.getItem('shibishaneInvoices')) || [];
-let clientLinkEnabled = JSON.parse(localStorage.getItem('shibishaneClientLinkEnabled')) || false; // NEW
-// ENHANCED: LOAD CATEGORIES FROM LOCALSTORAGE
+let clientLinkEnabled = JSON.parse(localStorage.getItem('shibishaneClientLinkEnabled')) || false;
 let CATEGORIES = JSON.parse(localStorage.getItem('shibishaneCategories')) || [
   {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu', products:[]},
   {id:'nightclub', name:'Night Club & VIP',desc:'Weekend vibes, DJs, Bottle Service, VIP Sections',features:['DJ Lineups','Bottle Store','VIP Booking','Ladies Night'],price:'VIP From R500', products:[]},
@@ -222,16 +226,20 @@ function toggleClientLink(){
   clientLinkEnabled =!clientLinkEnabled;
   localStorage.setItem('shibishaneClientLinkEnabled', JSON.stringify(clientLinkEnabled));
   document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none';
+  document.getElementById('clientLinkDisplay').style.display = clientLinkEnabled? 'block' : 'none';
   document.getElementById('toggleLinkBtn').innerText = clientLinkEnabled? '🔒 Disable Link' : '🔗 Enable Link';
   document.getElementById('toggleLinkBtn').style.background = clientLinkEnabled? 'var(--danger)' : 'var(--success)';
+  if(clientLinkEnabled){ const link = window.location.origin + window.location.pathname + '#guest'; document.getElementById('clientLinkBox').value = link; }
   alert(clientLinkEnabled? '✓ Client Link ENABLED' : '✗ Client Link DISABLED');
 }
 
 function copyClientLink(){
   if(!clientLinkEnabled){ alert('Enable Client Link first'); return; }
   const link = window.location.origin + window.location.pathname + '#guest';
+  document.getElementById('clientLinkBox').value = link;
+  document.getElementById('clientLinkBox').select();
   navigator.clipboard.writeText(link);
-  alert('✓ Client Link Copied!\n' + link);
+  alert('✓ Client Link Copied!\n' + link + '\n\nYou can also highlight and copy manually from the box');
 }
 
 function orderProductViaWhatsApp(productName, price){
@@ -270,12 +278,12 @@ function installPWA(){
 // ========== END ENHANCEMENT ==========
 
 function login(role){
-  autoDeleteOldTickets(); // ENHANCED
+  autoDeleteOldTickets();
   currentRole = role;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('roleBadge').innerText=role;
-  if(role === 'Manager'){ document.getElementById('toggleLinkBtn').style.display = 'block'; document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none'; } // ENHANCED
+  if(role === 'Manager'){ document.getElementById('toggleLinkBtn').style.display = 'block'; document.getElementById('copyLinkBtn').style.display = clientLinkEnabled? 'block' : 'none'; document.getElementById('clientLinkDisplay').style.display = clientLinkEnabled? 'block' : 'none'; if(clientLinkEnabled){ const link = window.location.origin + window.location.pathname + '#guest'; document.getElementById('clientLinkBox').value = link; } }
   if(role === 'Manager'){
     document.getElementById('priceSettingsCard').style.display = 'block';
     document.getElementById('postBox').style.display = 'block';
@@ -288,8 +296,8 @@ function logout(){
   document.getElementById('loginScreen').style.display='block';
 }
 function enterClientMode(){
-  if(!clientLinkEnabled && window.location.hash!== '#guest'){ alert('Client Link is currently disabled by Admin'); return; } // NEW
-  window.location.hash = 'guest'; // ENHANCED: Force hash
+  if(!clientLinkEnabled && window.location.hash!== '#guest'){ alert('Client Link is currently disabled by Admin'); return; }
+  window.location.hash = 'guest';
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('clientView').style.display='block';
   renderClientFeed(); renderClient();
@@ -527,7 +535,7 @@ function showQR(ticketId){
   }
 }
 function renderTickets(){
-  autoDeleteOldTickets(); // ENHANCED
+  autoDeleteOldTickets();
   const today = new Date().toDateString();
   const todayTickets = tickets.filter(t => new Date(t.time).toDateString() === today);
   document.getElementById('ticketsToday').innerText = todayTickets.length;
@@ -540,10 +548,7 @@ function renderTickets(){
       <p><b>Service:</b> ${t.type} - R${t.price}</p>
       <p><b>Time:</b> ${t.time}</p>
       <p><b>Status:</b> ${t.status}</p>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn small" onclick="printTicket('${t.id}')">🖨️ Print</button>
-        <button class="btn small secondary" onclick="showQR('${t.id}')">📱 QR</button>
-        <button class="btn small danger" onclick="closeTicket('${t.id}')">Mark Used</button>
+      <button class="btn small danger" onclick="closeTicket('${t.id}')">Mark Used</button>
       </div>
       <div id="qr_${t.id}" class="qr-box" style="display:none"></div>
     </div>
@@ -566,14 +571,14 @@ function addProduct(catId){
   const cat = CATEGORIES.find(c=>c.id===catId);
   const newImages = imgLink.trim()? [imgLink.trim()] : [];
   cat.products.push({id:Date.now(), title, price, desc, images:newImages});
-  saveCategories(); // NEW
+  saveCategories();
   document.getElementById('pTitle'+catId).value='';document.getElementById('pPrice'+catId).value='';
   document.getElementById('pDesc'+catId).value='';document.getElementById('pImg'+catId).value='';
   renderContent();
 }
-function deleteProduct(catId, pId){CATEGORIES.find(c=>c.id===catId).products = CATEGORIES.find(c=>c.id===catId).products.filter(p=>p.id!==pId); saveCategories(); renderContent();} // NEW
-function saveManualImage(catId, pId){const input = document.getElementById('manual'+catId+pId); const p = CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId); if(input.value.trim()){p.images.push(input.value.trim()); input.value=''; saveCategories(); renderContent();}} // NEW
-function deleteImage(catId, pId, index){CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.splice(index,1); saveCategories(); renderContent();} // NEW
+function deleteProduct(catId, pId){CATEGORIES.find(c=>c.id===catId).products = CATEGORIES.find(c=>c.id===catId).products.filter(p=>p.id!==pId); saveCategories(); renderContent();}
+function saveManualImage(catId, pId){const input = document.getElementById('manual'+catId+pId); const p = CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId); if(input.value.trim()){p.images.push(input.value.trim()); input.value=''; saveCategories(); renderContent();}}
+function deleteImage(catId, pId, index){CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.splice(index,1); saveCategories(); renderContent();}
 async function uploadToCatbox(catId, pId){
   const fileInput = document.getElementById('file'+catId+pId);
   if(!fileInput.files[0]){ alert('Select a file first'); return; }
@@ -582,7 +587,7 @@ async function uploadToCatbox(catId, pId){
     const res = await fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData});
     const url = await res.text();
     CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.push(url);
-    saveCategories(); // NEW
+    saveCategories();
     fileInput.value=''; renderContent();
     alert('Uploaded: '+url);
   }catch(e){ alert('Upload failed. Check connection.'); }
@@ -677,7 +682,7 @@ function deletePost(id){
 
 // ENHANCED: AUTO LOAD CLIENT VIEW ON REFRESH + AUTO DELETE
 window.addEventListener('load', ()=>{
-  autoDeleteOldTickets(); // ENHANCED
+  autoDeleteOldTickets();
   if(window.location.hash === '#guest'){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('clientView').style.display='block';
