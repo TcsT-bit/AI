@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#22c55e">
-<title>GREEN HOUSE SHIBISHANE - With Ticket System</title>
+<title>GREEN HOUSE SHIBISHANE - Tickets + Products</title>
 <style>
   :root {
     --bg:#06110b; --card:#0f1f16; --accent:#22c55e; --accent2:#16a34a;
@@ -15,23 +15,31 @@
   body{background: radial-gradient(1200px 600px at 50% -10%, rgba(34,197,94,0.15), transparent), var(--bg); color:var(--text);padding-bottom:80px;}
   header{background:linear-gradient(135deg,var(--accent2),var(--accent)); padding:24px 20px;text-align:center; box-shadow:0 8px 30px rgba(34,197,94,0.4);}
   header h1{font-size:2rem;font-weight:900;} header p{color:#fff;opacity:0.95;}
- .container{max-width:1100px;margin:20px auto;padding:0 15px}
- .card{background:rgba(15,31,22,0.7);backdrop-filter: blur(12px);border:1px solid rgba(34,197,94,0.2); border-radius:16px;padding:20px; margin-bottom:15px;}
- .btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;padding:12px 18px;border-radius:10px; cursor:pointer;font-weight:700;width:100%;margin-top:10px;}
- .btn.secondary{background:linear-gradient(135deg,var(--accent),#4ade80);color:#000}
- .btn.danger{background:linear-gradient(135deg,var(--danger),#dc2626)}
- .btn.small{width:auto;padding:8px 14px;font-size:0.85rem}
- .admin-bar{background:rgba(0,0,0,0.7);padding:12px; display:flex;gap:10px;flex-wrap:wrap;justify-content:center;position:sticky;top:0;z-index:100;}
- .ticket{background:rgba(34,197,94,0.1);border:2px dashed var(--accent);border-radius:12px;padding:15px;margin:10px 0; position:relative;}
- .ticket-number{position:absolute;top:10px;right:10px;background:var(--warning);color:#000;padding:4px 10px;border-radius:20px;font-weight:900;font-size:0.8rem;}
+.container{max-width:1100px;margin:20px auto;padding:0 15px}
+.card{background:rgba(15,31,22,0.7);backdrop-filter: blur(12px);border:1px solid rgba(34,197,94,0.2); border-radius:16px;padding:20px; margin-bottom:15px;}
+.btn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;padding:12px 18px;border-radius:10px; cursor:pointer;font-weight:700;width:100%;margin-top:10px;}
+.btn.secondary{background:linear-gradient(135deg,var(--accent),#4ade80);color:#000}
+.btn.danger{background:linear-gradient(135deg,var(--danger),#dc2626)}
+.btn.small{width:auto;padding:8px 14px;font-size:0.85rem}
+.admin-bar{background:rgba(0,0,0,0.7);padding:12px; display:flex;gap:10px;flex-wrap:wrap;justify-content:center;position:sticky;top:0;z-index:100;}
+.ticket{background:rgba(34,197,94,0.1);border:2px dashed var(--accent);border-radius:12px;padding:15px;margin:10px 0; position:relative;}
+.ticket-number{position:absolute;top:10px;right:10px;background:var(--warning);color:#000;padding:4px 10px;border-radius:20px;font-weight:900;font-size:0.8rem;}
   input,textarea,select{width:100%;padding:12px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.3);border-radius:10px;color:var(--text);margin:6px 0;}
- .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
- .nav-tabs{display:flex;gap:10px;overflow-x:auto;padding:12px 0;}
- .tab{padding:10px 16px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.2);border-radius:10px;cursor:pointer;font-weight:600;}
- .tab.active{background:linear-gradient(135deg,var(--accent2),var(--accent));}
- .kpi{display:flex;gap:15px;margin:15px 0;flex-wrap:wrap}
- .kpi-box{background:rgba(34,197,94,0.1);padding:15px;border-radius:12px;text-align:center;flex:1; border-bottom:3px solid var(--accent);}
- .kpi-box h4{font-size:1.8em;color:var(--accent);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.nav-tabs{display:flex;gap:10px;overflow-x:auto;padding:12px 0;}
+.tab{padding:10px 16px;background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.2);border-radius:10px;cursor:pointer;font-weight:600;}
+.tab.active{background:linear-gradient(135deg,var(--accent2),var(--accent));}
+.kpi{display:flex;gap:15px;margin:15px 0;flex-wrap:wrap}
+.kpi-box{background:rgba(34,197,94,0.1);padding:15px;border-radius:12px;text-align:center;flex:1; border-bottom:3px solid var(--accent);}
+.kpi-box h4{font-size:1.8em;color:var(--accent);}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;margin-top:15px}
+.product-card{background:rgba(31,41,55,0.6);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:12px;position:relative}
+.product-card img{width:100%;height:140px;object-fit:cover;border-radius:8px}
+.product-card h4{margin:8px 0;font-size:1rem;color:var(--accent)}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin-top:10px}
+.gallery-item{position:relative;border-radius:8px;overflow:hidden;border:2px solid rgba(34,197,94,0.3)}
+.gallery-item img{width:100%;height:80px;object-fit:cover;display:block}
+.gallery-item.del-btn{position:absolute;top:4px;right:4px;background:var(--danger);border:none;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.7rem}
 </style>
 </head>
 <body>
@@ -105,13 +113,13 @@ let tickets = JSON.parse(localStorage.getItem('shibishaneTickets')) || [];
 let currentRole = 'Manager';
 
 const CATEGORIES = [
-  {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu'},
-  {id:'nightclub', name:'Night Club & VIP',desc:'Weekend vibes, DJs, Bottle Service, VIP Sections',features:['DJ Lineups','Bottle Store','VIP Booking','Ladies Night'],price:'VIP From R500'},
-  {id:'pool', name:'Swimming Pools & Braai',desc:'Large swimming pool, kids playground, braai areas',features:['Day Pass R50','Kids Play Area','Braai Packs','Event Venue Hire'],price:'From R50'},
-  {id:'carwash', name:'Car Wash',desc:'Professional car wash services',features:['Full Wash','Valet','Fleet Services','Open 7 Days'],price:'From R70'},
-  {id:'guesthouse', name:'Luxury Guest House',desc:'Comfortable rooms for travelers',features:['10 Rooms','DSTV','Free WiFi','Secure Parking'],price:'From R450/night'},
-  {id:'liquor', name:'Liquor Store',desc:'Cold drinks, beers, ciders, spirits',features:['Ice Cold','Bulk Deals','Wholesale','Fast Service'],price:'In Store'},
-  {id:'events', name:'Events & Bookings',desc:'Weddings, Birthdays, Functions',features:['Sound System','Catering','Decor','Security'],price:'Quote on Request'}
+  {id:'restaurant', name:'Restaurant & Pub',desc:'Home cooked meals, shisa nyama, drinks, family friendly.',features:['Breakfast to Late Night','Takeaways','Family Area','Live Sports'],price:'See Menu', products:[]},
+  {id:'nightclub', name:'Night Club & VIP',desc:'Weekend vibes, DJs, Bottle Service, VIP Sections',features:['DJ Lineups','Bottle Store','VIP Booking','Ladies Night'],price:'VIP From R500', products:[]},
+  {id:'pool', name:'Swimming Pools & Braai',desc:'Large swimming pool, kids playground, braai areas',features:['Day Pass R50','Kids Play Area','Braai Packs','Event Venue Hire'],price:'From R50', products:[]},
+  {id:'carwash', name:'Car Wash',desc:'Professional car wash services',features:['Full Wash','Valet','Fleet Services','Open 7 Days'],price:'From R70', products:[]},
+  {id:'guesthouse', name:'Luxury Guest House',desc:'Comfortable rooms for travelers',features:['10 Rooms','DSTV','Free WiFi','Secure Parking'],price:'From R450/night', products:[]},
+  {id:'liquor', name:'Liquor Store',desc:'Cold drinks, beers, ciders, spirits',features:['Ice Cold','Bulk Deals','Wholesale','Fast Service'],price:'In Store', products:[]},
+  {id:'events', name:'Events & Bookings',desc:'Weddings, Birthdays, Functions',features:['Sound System','Catering','Decor','Security'],price:'Quote on Request', products:[]}
 ];
 const CONTACT = {email:'greenhouseshibishane@gmail.com',phone:'068 254 7352',location:'Greater Tubatse, Limpopo',hours:'Mon - Sun | 8am - Late',company:'GREEN HOUSE SHIBISHANE'};
 
@@ -155,7 +163,6 @@ function createTicket(){
   tickets.push(ticket);
   localStorage.setItem('shibishaneTickets', JSON.stringify(tickets));
 
-  // Send WhatsApp Ticket
   const msg = `*GREEN HOUSE SHIBISHANE TICKET*%0A%0A*Ticket #${ticket.id}*%0AName: ${name}%0AService: ${type}%0AAmount: R${price}%0ATime: ${ticket.time}%0A%0ANotes: ${note}%0A%0AShow this ticket at entrance. Thank you!`;
   window.open(`https://wa.me/27${phone.replace(/^0/,'')}?text=${msg}`,'_blank');
 
@@ -173,7 +180,7 @@ function renderTickets(){
   document.getElementById('revenueToday').innerText = 'R' + todayTickets.reduce((a,b)=>a+b.price,0);
   document.getElementById('activeGuests').innerText = tickets.filter(t=>t.status==='Active').length;
 
-  document.getElementById('ticketsList').innerHTML = tickets.slice().reverse().slice(0,10).map(t=>`
+  document.getElementById('ticketsList').innerHTML = tickets.slice().reverse().slice(0,20).map(t=>`
     <div class="ticket">
       <div class="ticket-number">#${t.id}</div>
       <h4>${t.name}</h4>
@@ -192,17 +199,82 @@ function closeTicket(id){
   renderTickets();
 }
 
-// SERVICES TAB FUNCTIONS
+// ========== PRODUCT SYSTEM WITH CATBOX ==========
 let currentTab = 0;
 function renderTabs(){document.getElementById('tabs').innerHTML = CATEGORIES.map((c,i)=>`<div class="tab ${i===currentTab?'active':''}" onclick="switchTab(${i})">${c.name}</div>`).join('');}
 function switchTab(i){ currentTab=i; renderTabs(); renderContent(); }
-function renderContent(){
-  const cat = CATEGORIES[currentTab];
-  document.getElementById('content').innerHTML = `<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800;font-size:1.2rem">${cat.price}</div></div>`;
+
+function addProduct(catId){
+  const title = document.getElementById('pTitle'+catId).value;
+  const price = document.getElementById('pPrice'+catId).value;
+  const desc = document.getElementById('pDesc'+catId).value;
+  const imgLink = document.getElementById('pImg'+catId).value;
+  if(!title ||!price){ alert('Enter Title and Price'); return; }
+  const cat = CATEGORIES.find(c=>c.id===catId);
+  const newImages = imgLink.trim()? [imgLink.trim()] : [];
+  cat.products.push({id:Date.now(), title, price, desc, images:newImages});
+  document.getElementById('pTitle'+catId).value='';document.getElementById('pPrice'+catId).value='';
+  document.getElementById('pDesc'+catId).value='';document.getElementById('pImg'+catId).value='';
+  renderContent();
 }
 
+function deleteProduct(catId, pId){CATEGORIES.find(c=>c.id===catId).products = CATEGORIES.find(c=>c.id===catId).products.filter(p=>p.id!==pId); renderContent();}
+function saveManualImage(catId, pId){const input = document.getElementById('manual'+catId+pId); const p = CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId); if(input.value.trim()){p.images.push(input.value.trim()); input.value=''; renderContent();}}
+function deleteImage(catId, pId, index){CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.splice(index,1); renderContent();}
+
+async function uploadToCatbox(catId, pId){
+  const fileInput = document.getElementById('file'+catId+pId);
+  if(!fileInput.files[0]){ alert('Select a file first'); return; }
+  const formData = new FormData(); formData.append('reqtype','fileupload'); formData.append('fileToUpload', fileInput.files[0]);
+  try{
+    const res = await fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData});
+    const url = await res.text();
+    CATEGORIES.find(c=>c.id===catId).products.find(p=>p.id===pId).images.push(url);
+    fileInput.value=''; renderContent();
+    alert('Uploaded: '+url);
+  }catch(e){ alert('Upload failed. Check connection.'); }
+}
+
+function renderProducts(cat){
+  if(cat.products.length===0) return '<p style="color:var(--muted)">No items added yet. Add your first special below.</p>';
+  return `<div class="product-grid">${cat.products.map(p=>`<div class="product-card">
+      ${p.images[0]?`<img src="${p.images[0]}">`:''}
+      <h4>${p.title}</h4>
+      <p style="color:var(--muted);font-size:0.85rem">${p.desc}</p>
+      <div style="color:var(--warning);font-weight:800">${p.price}</div>
+      <div class="gallery-grid">${p.images.map((img,i)=>`<div class="gallery-item"><img src="${img}"><button class="del-btn" onclick="deleteImage('${cat.id}',${p.id},${i})">×</button></div>`).join('')}</div>
+      <input type="file" id="file${cat.id}${p.id}" accept="image/*">
+      <button class="btn small" onclick="uploadToCatbox('${cat.id}',${p.id})">Upload Img</button>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="manual${cat.id}${p.id}" placeholder="Paste catbox link">
+        <button class="btn small" onclick="saveManualImage('${cat.id}',${p.id})">Add</button>
+      </div>
+      <button class="btn small danger" onclick="deleteProduct('${cat.id}',${p.id})">Delete</button>
+    </div>`).join('')}</div>`;
+}
+
+function renderContent(){
+  const cat = CATEGORIES[currentTab];
+  let html = `<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800;font-size:1.2rem">${cat.price}</div>
+    <h4 style="margin-top:16px">Product Hub - ${cat.products.length} Items</h4>${renderProducts(cat)}
+    <div class="card" style="margin-top:15px"><h4>Add New Item to ${cat.name}</h4>
+      <input id="pTitle${cat.id}" placeholder="Item Name e.g. Chicken & Chips">
+      <input id="pPrice${cat.id}" placeholder="Price e.g. R89">
+      <textarea id="pDesc${cat.id}" placeholder="Description"></textarea>
+      <input id="pImg${cat.id}" placeholder="Paste Catbox.moe Image Link Here - Optional">
+      <button class="btn" onclick="addProduct('${cat.id}')">+ Add Product</button>
+    </div>
+    <h4 style="margin-top:12px">Guest Enquiry</h4><textarea id="msg${cat.id}" placeholder="Booking, enquiry, table reservation..."></textarea>
+    <button class="btn secondary" onclick="sendWhatsApp('${cat.id}')">Send WhatsApp</button></div>`;
+  document.getElementById('content').innerHTML = html;
+}
+
+function sendWhatsApp(id){const msg = document.getElementById('msg'+id).value || 'Hello Green House Shibishane, I need assistance'; window.open(`https://wa.me/27682547352?text=${encodeURIComponent(msg)}`,'_blank');}
+
 function renderClient(){
-  let html = CATEGORIES.map(cat=>`<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800">${cat.price}</div></div>`).join('');
+  let html = CATEGORIES.map(cat=>`<div class="card"><h3>${cat.name}</h3><p>${cat.desc}</p><ul>${cat.features.map(f=>`<li>${f}</li>`).join('')}</ul><div style="color:var(--warning);font-weight:800">${cat.price}</div>
+    ${cat.products.length>0?`<h4 style="margin-top:10px;color:var(--accent)">On Offer:</h4><div class="product-grid">${cat.products.map(p=>`<div class="product-card">${p.images[0]?`<img src="${p.images[0]}">`:''}<h4>${p.title}</h4><p style="color:var(--muted);font-size:0.85rem">${p.desc}</p><div style="color:var(--warning);font-weight:800">${p.price}</div></div>`).join('')}</div>`:''}
+    </div>`).join('');
   html += `<div class="card"><h3>Contact Us</h3><p><b>Phone:</b> ${CONTACT.phone}</p><p><b>Location:</b> ${CONTACT.location}</p><button class="btn" onclick="window.open('https://wa.me/27682547352')">WhatsApp Us</button></div>`;
   document.getElementById('clientContent').innerHTML = html;
 }
