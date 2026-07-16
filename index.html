@@ -8,32 +8,30 @@
 <meta name="theme-color" content="#000">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
-:root{--bg:#000;--card:#0A0A0A;--card2:#111;--accent:#00FF88;--accent2:#00D4FF;--gold:#FFD700;--danger:#FF0033;--text:#FFFFFF;--muted:#666;--border:#1A1A1A;--gradient:linear-gradient(135deg,#00FF88 0%,#00D4FF 100%);--glow:0 0 30px rgba(0,255,136,0.4)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;background-image:radial-gradient(circle at 20% 50%,rgba(0,255,136,0.05) 0%,transparent 50%)}
-.header{position:sticky;top:0;z-index:100;background:rgba(0,0,0,0.8);backdrop-filter:blur(30px);border-bottom:1px solid var(--border);padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:24px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
+:root{--bg:#000;--card:#0A0A0A;--card2:#111;--accent:#00FF88;--accent2:#00D4FF;--gold:#FFD700;--danger:#FF0033;--success:#00FF88;--text:#FFFFFF;--muted:#666;--border:#1A1A1A;--gradient:linear-gradient(135deg,#00FF88 0%,#00D4FF 100%);--glow:0 0 30px rgba(0,255,136,0.4)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;background-image:radial-gradient(circle at 20% 50%,rgba(0,255,136,0.05) 0%,transparent 50%)}
+.header{position:sticky;top:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(40px);border-bottom:1px solid var(--border);padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:26px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
 .sync{position:fixed;top:20px;right:20px;background:var(--accent);color:#000;padding:10px 18px;border-radius:30px;font-size:12px;font-weight:900;z-index:999;box-shadow:var(--glow);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-.role-select{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px}
+.role-select{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;background:radial-gradient(circle at center,#001a0a 0%,#000 100%)}
 .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:25px;margin-top:40px;max-width:1000px}
-.role-card{background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid var(--border);padding:50px 30px;border-radius:24px;text-align:center;cursor:pointer;transition:0.4s cubic-bezier(.4,0,.2,1)}.role-card:hover{border-color:var(--accent);transform:translateY(-8px);box-shadow:var(--glow)}
-.nav{position:sticky;top:75px;z-index:99;background:rgba(0,0,0,0.8);backdrop-filter:blur(30px);display:flex;gap:10px;padding:15px;overflow-x:auto;border-bottom:1px solid var(--border)}
-.tab{padding:14px 24px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;font-weight:800;white-space:nowrap;transition:0.3s;position:relative}.tab.active{background:var(--gradient);color:#000;box-shadow:var(--glow)}
+.role-card{background:linear-gradient(145deg,rgba(10,10,10,0.8),rgba(17,17,17,0.8));border:1px solid var(--border);padding:50px 30px;border-radius:24px;text-align:center;cursor:pointer;transition:0.4s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px)}.role-card:hover{border-color:var(--accent);transform:translateY(-8px) scale(1.02);box-shadow:var(--glow)}
+.nav{position:sticky;top:78px;z-index:99;background:rgba(0,0,0,0.85);backdrop-filter:blur(40px);display:flex;gap:10px;padding:15px;overflow-x:auto;border-bottom:1px solid var(--border)}
+.tab{padding:14px 24px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;font-weight:800;white-space:nowrap;transition:0.3s;position:relative}.tab.active{background:var(--gradient);color:#000;box-shadow:var(--glow);transform:scale(1.05)}
 .container{padding:20px;max-width:1600px;margin:0 auto}
-.card{background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:20px;animation:fadeIn 0.4s}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}}
+.card{background:linear-gradient(145deg,rgba(10,10,10,0.9),rgba(17,17,17,0.9));border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:20px;animation:fadeIn 0.4s;backdrop-filter:blur(10px)}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}}
 .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:30px}
-.stat-card{background:var(--card2);border:1px solid var(--accent);border-radius:16px;padding:20px;position:relative;overflow:hidden}.stat-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--gradient)}
-.stat-value{font-size:32px;font-weight:900;color:var(--accent)}
+.stat-card{background:linear-gradient(145deg,var(--card2),#0F0F0F);border:1px solid var(--accent);border-radius:16px;padding:24px;position:relative;overflow:hidden;transition:0.3s}.stat-card:hover{transform:translateY(-5px);box-shadow:var(--glow)}.stat-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--gradient)}
+.stat-value{font-size:36px;font-weight:900;color:var(--accent);background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .btn{background:var(--gradient);color:#000;border:none;padding:16px 28px;border-radius:14px;font-weight:900;cursor:pointer;width:100%;font-size:15px;transition:0.3s}.btn:hover{transform:scale(1.03);box-shadow:var(--glow)}
 .btn-secondary{background:#1A1A1A;color:var(--text);border:1px solid var(--border)}
 .input{width:100%;padding:16px;background:#0F0F0F;border:1px solid var(--border);border-radius:14px;color:var(--text);font-size:15px;margin:8px 0;transition:0.3s}.input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(0,255,136,0.1)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
 .ticket{border-left:4px solid var(--accent);position:relative}
 .qr{margin:15px auto;display:block;background:white;padding:10px;border-radius:12px}
-.chart{height:200px;background:var(--card2);border-radius:12px;margin:15px 0;display:flex;align-items:end;gap:5px;padding:10px}
-.bar{flex:1;background:var(--gradient);border-radius:4px 4px 0 0;animation:grow 1s}
-@keyframes grow{from{height:0}}
 #installBtn{position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;padding:18px 26px;border-radius:50px;font-weight:900;display:none;z-index:999;box-shadow:0 10px 30px rgba(255,215,0,0.4)}
 .badge{background:var(--danger);color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800}
+.paid-badge{background:var(--success);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:900}
 
 /* ALIVE UI INJECTIONS */
 .toast{position:fixed;bottom:100px;right:20px;background:var(--gradient);color:#000;padding:16px 20px;border-radius:14px;font-weight:800;z-index:1001;transform:translateX(400px);transition:0.4s;box-shadow:var(--glow)}
@@ -43,9 +41,9 @@
 .floating-action{position:fixed;bottom:80px;right:20px;width:60px;height:60px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;box-shadow:var(--glow);z-index:998}
 .live-indicator{display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 1s infinite;margin-right:8px}
 .confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
-.skeleton{background:linear-gradient(90deg,#111 25%,#222 50%,#111 75%);background-size:200% 100%;animation:loading 1.5s infinite}
-@keyframes loading{0%{background-position:200% 0}100%{background-position:-200% 0}}
-@keyframes fall{to{transform:translateY(100vh) rotate(360deg)}}
+.live-ticker{position:fixed;bottom:0;left:0;width:100%;background:rgba(0,255,136,0.1);padding:10px;overflow:hidden;white-space:nowrap;z-index:997}
+.ticker-text{display:inline-block;animation:scroll 20s linear infinite}
+@keyframes scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 @media(max-width:768px){.role-grid{grid-template-columns:1fr}.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
@@ -56,7 +54,6 @@
 <div class="sync" id="syncStatus">🟡 CONNECTING</div>
 <button id="installBtn" onclick="installPWA()">📲 INSTALL APP</button>
 
-<!-- ROLE SELECT -->
 <div class="role-select" id="roleSelect">
   <h1 class="logo">OMEGA OPS</h1>
   <p style="color:var(--muted);margin-top:10px">5 STAR BUSINESS OPERATING SYSTEM</p>
@@ -67,7 +64,6 @@
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="mainApp" style="display:none">
   <div class="header">
     <div class="logo">OMEGA OPS</div>
@@ -112,8 +108,10 @@
         <h3>Create Ticket</h3>
         <input class="input" id="tName" placeholder="Guest Name">
         <input class="input" id="tPhone" placeholder="Phone 076...">
-        <select class="input" id="tType"><option>Pool Entry - R50</option><option>VIP Table - R500</option><option>Guest House Night - R800</option><option>Event Ticket - R200</option></select>
+        <select class="input" id="tType" onchange="updateTicketPrice()"></select>
+        <input class="input" id="tCustomPrice" type="number" placeholder="Custom Price R">
         <button class="btn" onclick="createTicket()">Create & WhatsApp Ticket</button>
+        <button class="btn-secondary" onclick="manageTicketPrices()" style="margin-top:10px">⚙️ Edit Ticket Prices</button>
       </div>
       <div id="ticketsList"></div>
     </div>
@@ -135,11 +133,13 @@
 
     <div id="invoices" style="display:none">
       <div class="card">
-        <h3>Create Invoice</h3>
+        <h3>Create Professional Invoice</h3>
         <input class="input" id="iName" placeholder="Client Name">
         <input class="input" id="iPhone" placeholder="Client Phone">
         <div id="invoiceItems"></div>
         <button class="btn-secondary" onclick="addInvoiceItem()">+ Add Item</button>
+        <label style="display:flex;align-items:center;gap:10px;margin:15px 0"><input type="checkbox" id="vatToggle"> Add VAT 15%</label>
+        <div style="font-size:18px;font-weight:800">Subtotal: R<span id="subtotal">0</span> | VAT: R<span id="vatAmount">0</span> | Total: R<span id="total">0</span></div>
         <button class="btn" onclick="generateInvoice()">Generate PDF + WhatsApp</button>
         <button class="btn-secondary" onclick="payFast()">💳 Pay with PayFast</button>
       </div>
@@ -148,14 +148,14 @@
   </div>
 </div>
 
-<!-- ALIVE UI HTML INJECTIONS -->
 <div class="toast" id="toast"></div>
 <div class="floating-action" onclick="quickActions()">⚡</div>
 <div class="confetti" id="confetti"></div>
+<div class="live-ticker"><div class="ticker-text" id="tickerText">🟢 LIVE: Welcome to OMEGA OPS</div></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, onValue, push, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, set, onValue, push, remove, get, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDEEejK0jOJh8RJL7swPMmQXYDSrOYsqHE",
@@ -171,9 +171,8 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const COMPANY_WHATSAPP = "27762453878";
 
-let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0;
+let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketPrices = {};
 
-// SERVICE WORKER FOR OFFLINE
 if('serviceWorker' in navigator){navigator.serviceWorker.register(URL.createObjectURL(new Blob([`self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))})`],{type:'text/javascript'})))}
 
 window.selectRole = (role)=>{
@@ -193,14 +192,19 @@ window.showTab = (tab)=>{
 }
 
 function loadAll(){
+  onValue(ref(db,'ticketPrices'), s => {
+    ticketPrices = s.val() || {Pool:50,VIP:500,GuestHouse:800,Event:200};
+    renderTicketTypes();
+  });
   onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();updateStats()});
   onValue(ref(db,'tickets'),s=>{tickets=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderTickets();updateStats()});
   onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[];renderFeed()});
   onValue(ref(db,'crm'),s=>{crm=s.val()?Object.values(s.val()):[];renderCRM()});
-  onValue(ref(db,'invoices'),s=>{invoices=s.val()?Object.values(s.val()):[];renderInvoices()});
+  onValue(ref(db,'invoices'),s=>{invoices=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderInvoices()});
   onValue(ref(db,'activity'), snap => {
     const acts = snap.val()? Object.values(snap.val()).reverse().slice(0,5) : [];
     if(acts.length > 0) document.querySelector('.tab').innerHTML = '📊 DASHBOARD<span class="notification-dot"></span>';
+    tickerText.innerText = acts.map(a=>a.msg).join(' • ') || '🟢 LIVE: System Running';
   });
   syncStatus.innerText='🟢 LIVE';
 }
@@ -213,15 +217,32 @@ function updateStats(){
   if(services.filter(s=>s.stock<10).length > 0) showToast('⚠️ Low Stock Alert!');
 }
 
-// DASHBOARD CHART
 function initChart(){
   new Chart(document.getElementById('salesChart'),{
-    type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Revenue',data:[1200,1900,3000,5000,2000,3000,4500],borderColor:'#00FF88',backgroundColor:'rgba(0,255,136,0.1)'}]},
+    type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Revenue',data:[1200,1900,3000,5000,2000,3000,4500],borderColor:'#00FF88',backgroundColor:'rgba(0,255,136,0.1)',tension:0.4}]},
     options:{responsive:true,plugins:{legend:{display:false}}}
   });
 }
 
-// SERVICES + INVENTORY
+// TICKET PRICES MANAGEMENT
+function renderTicketTypes(){
+  tType.innerHTML = Object.keys(ticketPrices).map(k=>`<option>${k} - R${ticketPrices[k]}</option>`).join('');
+}
+window.manageTicketPrices = () => {
+  let newPrices = prompt('Edit Prices: Format Name=Price,Name=Price\nEx: Pool=60,VIP=550');
+  if(newPrices){
+    const obj = {};
+    newPrices.split(',').forEach(p=>{const [k,v]=p.split('='); obj[k]=parseInt(v)});
+    set(ref(db,'ticketPrices'), obj);
+    showToast('✅ Ticket prices updated');
+  }
+}
+window.updateTicketPrice = () => {
+  const selected = tType.value.split(' - R')[1];
+  tCustomPrice.value = selected;
+}
+
+// SERVICES
 window.addService=()=>{push(ref(db,'services'),{name:sName.value,price:sPrice.value,stock:sStock.value,img:sImg.value,cat:sCategory.value})}
 function renderServices(){
   servicesList.innerHTML=services.map(s=>`
@@ -235,16 +256,17 @@ function renderServices(){
 }
 window.orderWhatsApp=(name,price)=>{window.open(`https://wa.me/${COMPANY_WHATSAPP}?text=Order: ${name} R${price}`,'_blank')}
 
-// TICKETS + AUTO DELETE
-window.createTicket=()=>{const t={name:tName.value,phone:tPhone.value,type:tType.value,status:'Active',created:Date.now()};push(ref(db,'tickets'),t);push(ref(db,'crm'),{name:tName.value,phone:tPhone.value,visits:1,lastVisit:Date.now()});window.open(`https://wa.me/27${tPhone.value.replace(/^0/,'')}?text=*TICKET*%0A${t.name}%0A${t.type}`,'_blank'); push(ref(db,'activity'), {msg:`New Ticket: ${t.name}`,time:Date.now()})}
+// TICKETS
+window.createTicket=()=>{const t={name:tName.value,phone:tPhone.value,type:tType.value,price:tCustomPrice.value,status:'Active',created:Date.now()};push(ref(db,'tickets'),t);push(ref(db,'crm'),{name:tName.value,phone:tPhone.value,visits:1,lastVisit:Date.now()});window.open(`https://wa.me/27${tPhone.value.replace(/^0/,'')}?text=*TICKET*%0A${t.name}%0A${t.type}%0AR${t.price}`,'_blank'); push(ref(db,'activity'), {msg:`New Ticket: ${t.name} R${t.price}`,time:Date.now()})}
 function renderTickets(){
   ticketsList.innerHTML=tickets.map(t=>`
-    <div class="card ticket"><h4>${t.name}</h4><p>${t.type}</p><p>Status: ${t.status}</p>
+    <div class="card ticket"><h4>${t.name}</h4><p>${t.type}</p><p style="color:var(--accent)">R${t.price}</p><p>Status: ${t.status}</p>
     <canvas id="qr_${t.id}" class="qr"></canvas>
-    <button class="btn-secondary" onclick="remove(ref(db,'tickets/${t.id}'))">Mark Used</button></div>
+    <button class="btn-secondary" onclick="markTicketUsed('${t.id}')">Mark Used</button></div>
   `).join('');
   tickets.forEach(t=>{if(document.getElementById(`qr_${t.id}`))QRCode.toCanvas(document.getElementById(`qr_${t.id}`),t.id,{width:120})});
 }
+window.markTicketUsed = (id) => {update(ref(db,'tickets/'+id),{status:'Used'}); showToast('✅ Ticket marked used')}
 setInterval(()=>{tickets.forEach(t=>{if(Date.now()-t.created>86400000)remove(ref(db,'tickets/'+t.id))})},60000)
 
 // CRM
@@ -255,68 +277,47 @@ window.searchCRM=()=>{const q=crmSearch.value;crmList.innerHTML=crm.filter(c=>c.
 window.createPost=()=>{push(ref(db,'feed'),{text:fText.value,img:fImg.value,time:Date.now()}); push(ref(db,'activity'), {msg:'New Post',time:Date.now()})}
 function renderFeed(){feedList.innerHTML=feed.map(f=>`<div class="card">${f.img?`<img src="${f.img}" style="width:100%;border-radius:12px">`:''}<p>${f.text}</p><small style="color:var(--muted)">${new Date(f.time).toLocaleString()}</small></div>`).join('')}
 
-// INVOICES + PAYFAST
+// INVOICES - PROFESSIONAL
 let invItems=0;
-window.addInvoiceItem=()=>{invoiceItems.innerHTML+=`<div style="display:flex;gap:10px"><input class="input" id="iItem${invItems}" placeholder="Item"><input class="input" id="iPrice${invItems}" placeholder="Price" type="number"></div>`;invItems++}
+window.addInvoiceItem=()=>{invoiceItems.innerHTML+=`<div style="display:flex;gap:10px"><input class="input" id="iItem${invItems}" placeholder="Item"><input class="input" id="iPrice${invItems}" placeholder="Price" type="number" onkeyup="calcInvoice()"></div>`;invItems++}
+function calcInvoice(){
+  let sub=0; for(let i=0;i<invItems;i++){sub+=parseFloat(document.getElementById(`iPrice${i}`)?.value||0)}
+  let vat = vatToggle.checked? sub*0.15 : 0;
+  subtotal.innerText=sub.toFixed(2); vatAmount.innerText=vat.toFixed(2); total.innerText=(sub+vat).toFixed(2);
+}
+vatToggle.onchange = calcInvoice;
+
+function renderInvoices(){
+  invoicesList.innerHTML=invoices.map(i=>`
+    <div class="card"><h4>Invoice #${i.id.slice(-6)}</h4><p>${i.name}</p><p>Total: R${i.total}</p>
+    <span class="${i.paid?'paid-badge':'badge'}">${i.paid?'PAID':'UNPAID'}</span>
+    <button class="btn-secondary" onclick="togglePaid('${i.id}',${!i.paid})">${i.paid?'Mark Unpaid':'Mark Paid'}</button></div>
+  `).join('');
+}
+window.togglePaid = (id,status) => {update(ref(db,'invoices/'+id),{paid:status})}
+
 window.generateInvoice=()=>{
-  alert('PDF Generated + WhatsApp Sent');
-  revenue += 1000;
-  celebrate();
-  showToast('✅ Invoice Sent! +R1000');
-  push(ref(db,'activity'), {msg:'New Invoice',time:Date.now()});
+  const items = []; for(let i=0;i<invItems;i++) items.push({name:document.getElementById(`iItem${i}`).value,price:document.getElementById(`iPrice${i}`).value});
+  const inv = {name:iName.value,phone:iPhone.value,items,subtotal:subtotal.innerText,vat:vatAmount.innerText,total:total.innerText,paid:false,time:Date.now()};
+  push(ref(db,'invoices'),inv);
+  revenue += parseFloat(total.innerText);
+  celebrate(); showToast(`✅ Invoice Sent! R${total.innerText}`);
+  push(ref(db,'activity'), {msg:`New Invoice: R${total.innerText}`,time:Date.now()});
+  window.open(`https://wa.me/27${iPhone.value.replace(/^0/,'')}?text=*INVOICE*%0ATotal: R${total.innerText}`,'_blank');
 }
 window.payFast=()=>{window.open('https://www.payfast.co.za/eng/process','_blank')}
 
-// ===== ALIVE UI FEATURES INJECTED =====
-let notifCount = 0;
-
-// 1. TOAST NOTIFICATIONS
-window.showToast = (msg) => {
-  toast.innerText = msg;
-  toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'),3000);
-}
-
-// 3. CONFETTI ON SALE
-window.celebrate = () => {
-  for(let i=0; i<50; i++){
-    const c = document.createElement('div');
-    c.style.cssText = `position:absolute;width:10px;height:10px;background:${['#00FF88','#00D4FF','#FFD700'][i%3]};left:${Math.random()*100}%;animation:fall 3s linear`;
-    confetti.appendChild(c);
-    setTimeout(()=>c.remove(),3000);
-  }
-}
-
-// 4. QUICK ACTIONS FAB
-window.quickActions = () => {
-  const action = prompt('Quick Action:\n1. New Ticket\n2. New Order\n3. Post News');
-  if(action==='1') showTab('tickets');
-  if(action==='2') showTab('services');
-  if(action==='3') showTab('feed');
-}
-
-// 6. LIVE PRESENCE
-function initPresence(){
-  let presenceRef = ref(db,'presence/'+Date.now());
-  set(presenceRef,true);
-  onValue(ref(db,'presence'), s => {
-    const count = s.val()? Object.keys(s.val()).length : 1;
-    roleBadge.innerHTML = `${currentRole} <span class="live-indicator"></span>${count} Online`;
-  });
-}
-
-// 7. SMART SUGGESTIONS AI
-window.getSuggestion = () => {
-  if(tickets.length > 10) showToast('💡 Peak hours! Add more staff');
-  if(revenue > 5000) showToast('🎉 Target reached! Celebrate team');
-}
+// ALIVE UI
+window.showToast = (msg) => {toast.innerText = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000)}
+window.celebrate = () => {for(let i=0; i<50; i++){const c = document.createElement('div'); c.style.cssText = `position:absolute;width:10px;height:10px;background:${['#00FF88','#00D4FF','#FFD700'][i%3]};left:${Math.random()*100}%;animation:fall 3s linear`; confetti.appendChild(c); setTimeout(()=>c.remove(),3000)}}
+window.quickActions = () => {const action = prompt('Quick Action:\n1. New Ticket\n2. New Order\n3. Post News'); if(action==='1') showTab('tickets'); if(action==='2') showTab('services'); if(action==='3') showTab('feed')}
+function initPresence(){let presenceRef = ref(db,'presence/'+Date.now()); set(presenceRef,true); onValue(ref(db,'presence'), s => {const count = s.val()? Object.keys(s.val()).length : 1; roleBadge.innerHTML = `${currentRole} <span class="live-indicator"></span>${count} Online`})}
+window.getSuggestion = () => {if(tickets.length > 10) showToast('💡 Peak hours! Add more staff'); if(revenue > 5000) showToast('🎉 Target reached! Celebrate team')}
 setInterval(getSuggestion,30000);
 
-// PWA
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.style.display='block'});
 window.installPWA=()=>{deferredPrompt.prompt()}
-
 </script>
 </body>
 </html>
