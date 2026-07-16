@@ -9,6 +9,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
 :root{--bg:#000;--card:#0A0A0A;--card2:#111;--accent:#00FF88;--accent2:#00D4FF;--gold:#FFD700;--danger:#FF0033;--success:#00FF88;--text:#FFFFFF;--muted:#666;--border:#1A1A1A;--gradient:linear-gradient(135deg,#00FF88 0%,#00D4FF 100%);--glow:0 0 30px rgba(0,255,136,0.4)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD}
 .header{position:sticky;top:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(40px);border-bottom:1px solid var(--border);padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:26px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
 .cart-btn{position:relative;background:var(--gradient);color:#000;padding:12px 20px;border-radius:30px;font-weight:900;cursor:pointer}
@@ -37,6 +38,9 @@
 .badge{background:var(--danger);color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800}
 .paid-badge{background:var(--success);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:900}
 .service-price{display:flex;justify-content:space-between;align-items:center;margin:8px 0;padding:12px;background:#0F0F0F;border-radius:12px}
+.mode-btn.active{background:var(--gradient);color:#000}
+.loyalty-badge{background:var(--gold);color:#000;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:900}
+#qrScanner{width:100%;border-radius:12px}
 
 /* WATER BG + ALIVE UI */
 #waterBg{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;pointer-events:none}
@@ -54,23 +58,26 @@
 @keyframes scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .cart-modal{position:fixed;top:0;right:-400px;width:400px;height:100vh;background:#0A0A0A;border-left:1px solid var(--border);z-index:1000;transition:0.4s;padding:20px;overflow-y:auto}
 .cart-modal.open{right:0}
+.theme-toggle{position:fixed;bottom:150px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;z-index:998}
 @media(max-width:768px){.role-grid{grid-template-columns:1fr}.dashboard-grid{grid-template-columns:repeat(2,1fr)}.cart-modal{width:100%}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
 <div id="waterBg"></div>
 <div class="sync" id="syncStatus">🟡 CONNECTING</div>
 <button id="installBtn" onclick="installPWA()">📲 INSTALL APP</button>
+<div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 
 <div class="role-select" id="roleSelect">
   <h1 class="logo">OMEGA OPS</h1>
   <p style="color:var(--muted);margin-top:10px">5 STAR BUSINESS OPERATING SYSTEM</p>
   <div class="role-grid">
     <div class="role-card" onclick="selectRole('Manager')"><div style="font-size:60px">👑</div><h3>MANAGER</h3><p style="color:var(--muted)">Full Control + Analytics</p></div>
-    <div class="role-card" onclick="selectRole('Reception')"><div style="font-size:60px">📋</div><h3>RECEPTION</h3><p style="color:var(--muted)">Tickets + CRM + POS</p></div>
+    <div class="role-card" onclick="selectRole('Reception')"><div style="font-size:60px">📋</div><h3>RECEPTION</h3><p style="color:var(--muted)">Tickets + CRM + POS + Scanner</p></div>
     <div class="role-card" onclick="selectRole('Guest')"><div style="font-size:60px">🛒</div><h3>GUEST</h3><p style="color:var(--muted)">Menu + Order + Loyalty</p></div>
   </div>
 </div>
@@ -97,6 +104,7 @@
     <div class="tab active" onclick="showTab('dashboard')">📊 DASHBOARD</div>
     <div class="tab" onclick="showTab('services')">🍽️ SERVICES</div>
     <div class="tab" onclick="showTab('tickets')">🎫 TICKETS</div>
+    <div class="tab" onclick="showTab('scanner')">📷 SCANNER</div>
     <div class="tab" onclick="showTab('crm')">👥 CRM</div>
     <div class="tab" onclick="showTab('feed')">📢 NEWSFEED</div>
     <div class="tab" onclick="showTab('invoices')">🧾 INVOICES</div>
@@ -108,7 +116,7 @@
         <div class="stat-card"><div style="color:var(--muted)">Revenue Today</div><div class="stat-value" id="revToday">R0</div></div>
         <div class="stat-card"><div style="color:var(--muted)">Active Tickets</div><div class="stat-value" id="activeTickets">0</div></div>
         <div class="stat-card"><div style="color:var(--muted)">Guests Served</div><div class="stat-value" id="guestsServed">0</div></div>
-        <div class="stat-card"><div style="color:var(--muted)">Low Stock Items</div><div class="stat-value" id="lowStock">0</div></div>
+        <div class="stat-card"><div style="color:var(--muted)">Loyalty Points</div><div class="stat-value" id="loyaltyPoints">0</div></div>
       </div>
       <div class="card"><h3>Sales This Week</h3><canvas id="salesChart"></canvas></div>
     </div>
@@ -130,19 +138,39 @@
     <div id="tickets" style="display:none">
       <div class="card" id="ticketAdmin">
         <h3>Create Ticket / POS Sale</h3>
+        <div style="display:flex;gap:10px;margin-bottom:15px">
+          <button class="btn-secondary mode-btn active" id="posModeBtn" onclick="setTicketMode('pos')">🛒 POS Mode</button>
+          <button class="btn-secondary mode-btn" id="manualModeBtn" onclick="setTicketMode('manual')">✍️ Manual Mode</button>
+        </div>
         <input class="input" id="tName" placeholder="Guest Name">
         <input class="input" id="tPhone" placeholder="Phone 076...">
-        <h4 style="margin-top:15px">Select Products/Services:</h4>
-        <div id="ticketProductList"></div>
-        <div style="font-size:20px;font-weight:900;margin:15px 0">Total: R<span id="ticketTotal">0</span></div>
+        <div id="posMode">
+          <h4 style="margin-top:15px">Select Products/Services:</h4>
+          <div id="ticketProductList"></div>
+          <div style="font-size:20px;font-weight:900;margin:15px 0">Total: R<span id="ticketTotal">0</span> | Points: <span id="ticketPoints">0</span></div>
+        </div>
+        <div id="manualMode" style="display:none">
+          <input class="input" id="tManualName" placeholder="Ticket Name: Pool Entry, VIP Table, etc">
+          <input class="input" id="tManualPrice" type="number" placeholder="Ticket Price R">
+          <textarea class="input" id="tManualDesc" rows="2" placeholder="Description/Notes"></textarea>
+        </div>
         <button class="btn" onclick="createTicket()">Create & WhatsApp Ticket</button>
         <button class="btn-secondary" onclick="generateClientLink()" style="margin-top:10px">🔗 Generate Client PWA Link</button>
       </div>
       <div id="ticketsList"></div>
     </div>
 
+    <!-- QR SCANNER TAB -->
+    <div id="scanner" style="display:none">
+      <div class="card">
+        <h3>📷 Scan Ticket QR</h3>
+        <div id="qrScanner"></div>
+        <p style="color:var(--muted);margin-top:10px">Point camera at ticket QR to mark as used</p>
+      </div>
+    </div>
+
     <div id="crm" style="display:none">
-      <div class="card"><h3>Guest Database</h3><input class="input" id="crmSearch" placeholder="Search by phone..." onkeyup="searchCRM()"></div>
+      <div class="card"><h3>Guest Database + Loyalty</h3><input class="input" id="crmSearch" placeholder="Search by phone..." onkeyup="searchCRM()"></div>
       <div id="crmList"></div>
     </div>
 
@@ -185,12 +213,13 @@
 
 <!-- CART MODAL -->
 <div class="cart-modal" id="cartModal">
-  <h3>Your Cart</h3>
+  <h3>Your Cart <span class="loyalty-badge" id="clientPoints">0 Points</span></h3>
   <div id="cartItems"></div>
   <div style="font-size:24px;font-weight:900;margin:20px 0">Total: R<span id="cartTotal">0</span></div>
   <input class="input" id="clientName" placeholder="Your Name">
   <input class="input" id="clientPhone" placeholder="Your Phone">
-  <button class="btn" onclick="placeOrder()">Place Order via WhatsApp</button>
+  <button class="btn" onclick="payFastCheckout()">💳 Pay Now with PayFast</button>
+  <button class="btn-secondary" onclick="placeOrder()">Order via WhatsApp</button>
   <button class="btn-secondary" onclick="toggleCart()" style="margin-top:10px">Close</button>
 </div>
 
@@ -216,12 +245,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const COMPANY_WHATSAPP = "27762453878";
+const PAYFAST_MERCHANT_ID = "10000100"; // Replace with your PayFast ID
 
-let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketCart = []; let clientCart = []; let isClientMode = false;
+let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketCart = []; let clientCart = []; let isClientMode = false; let ticketMode = 'pos'; let html5QrCode;
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register(URL.createObjectURL(new Blob([`self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))})`],{type:'text/javascript'})))}
 
-// CHECK CLIENT MODE
 if(window.location.search.includes('client=true')){
   isClientMode = true;
   roleSelect.style.display='none';
@@ -234,6 +263,12 @@ if(window.location.search.includes('client=true')){
 function createBubbles(){for(let i=0;i<20;i++){const b=document.createElement('div');b.className='bubble';b.style.width=b.style.height=Math.random()*100+20+'px';b.style.left=Math.random()*100+'%';b.style.animationDelay=Math.random()*15+'s';waterBg.appendChild(b)}}
 createBubbles();
 
+// 3. DARK/LIGHT TOGGLE
+window.toggleTheme = () => {
+  document.body.classList.toggle('light');
+  document.querySelector('.theme-toggle').innerText = document.body.classList.contains('light')?'🌙':'☀️';
+}
+
 window.selectRole = (role)=>{
   currentRole=role;
   roleSelect.style.display='none'; mainApp.style.display='block';
@@ -241,11 +276,12 @@ window.selectRole = (role)=>{
   serviceAdmin.style.display = role==='Manager'?'block':'none';
   feedAdmin.style.display = role==='Manager'?'block':'none';
   ticketAdmin.style.display = (role==='Manager'||role==='Reception')?'block':'none';
+  if(role==='Reception') initScanner();
   loadAll(); initChart(); initPresence();
 }
 
 window.showTab = (tab)=>{
-  ['dashboard','services','tickets','crm','feed','invoices'].forEach(t=>document.getElementById(t).style.display='none');
+  ['dashboard','services','tickets','scanner','crm','feed','invoices'].forEach(t=>document.getElementById(t).style.display='none');
   document.getElementById(tab).style.display='block';
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active')); event.target.classList.add('active');
 }
@@ -260,11 +296,10 @@ function loadAll(){
   onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();renderTicketProducts();renderServicePrices();updateStats(); renderClientProducts()});
   onValue(ref(db,'tickets'),s=>{tickets=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderTickets();updateStats()});
   onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[];renderFeed(); renderClientFeed()});
-  onValue(ref(db,'crm'),s=>{crm=s.val()?Object.values(s.val()):[];renderCRM()});
+  onValue(ref(db,'crm'),s=>{crm=s.val()?Object.values(s.val()):[];renderCRM(); updateLoyaltyStats()});
   onValue(ref(db,'invoices'),s=>{invoices=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderInvoices()});
   onValue(ref(db,'activity'), snap => {
     const acts = snap.val()? Object.values(snap.val()).reverse().slice(0,5) : [];
-    if(acts.length > 0 &&!isClientMode) document.querySelector('.tab').innerHTML = '📊 DASHBOARD<span class="notification-dot"></span>';
     tickerText.innerText = acts.map(a=>a.msg).join(' • ') || '🟢 LIVE: System Running';
   });
   syncStatus.innerText='🟢 LIVE';
@@ -279,16 +314,15 @@ function updateStats(){
   revToday.innerText='R'+revenue.toLocaleString();
   activeTickets.innerText=tickets.filter(t=>t.status!=='Used').length;
   guestsServed.innerText=crm.length;
-  lowStock.innerText=services.filter(s=>s.stock<10).length;
-  if(services.filter(s=>s.stock<10).length > 0) showToast('⚠️ Low Stock Alert!');
 }
 
-function initChart(){
-  new Chart(document.getElementById('salesChart'),{
-    type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Revenue',data:[1200,1900,3000,5000,2000,3000,4500],borderColor:'#00FF88',backgroundColor:'rgba(0,255,136,0.1)',tension:0.4}]},
-    options:{responsive:true,plugins:{legend:{display:false}}}
-  });
+// 4. LOYALTY SYSTEM
+function updateLoyaltyStats(){
+  const totalPoints = crm.reduce((sum,c)=>sum+(c.points||0),0);
+  loyaltyPoints.innerText = totalPoints;
 }
+
+function calcPoints(amount){ return Math.floor(amount / 100); } // R100 = 1 point
 
 // SERVICES
 window.addService=()=>{push(ref(db,'services'),{name:sName.value,price:parseFloat(sPrice.value),stock:parseInt(sStock.value),img:sImg.value,cat:sCategory.value})}
@@ -312,7 +346,7 @@ function renderServicePrices(){
 }
 window.updateServicePrice = (id,val) => {update(ref(db,'services/'+id),{price:parseFloat(val)}); showToast('✅ Price updated')}
 
-// CLIENT STORE - TEMU LEVEL
+// CLIENT STORE + LOYALTY
 function renderClientProducts(){
   clientProducts.innerHTML = services.map(s=>`
     <div class="card product-card">
@@ -335,24 +369,45 @@ window.addToClientCart = (id) => {
 }
 function updateCartUI(){
   cartCount.innerText = clientCart.length;
+  const total = clientCart.reduce((sum,i)=>sum+i.price,0);
   cartItems.innerHTML = clientCart.map((i,idx)=>`
     <div style="display:flex;justify-content:space-between;margin:10px 0">
       <span>${i.name}</span>
       <span>R${i.price}</span>
     </div>
   `).join('');
-  cartTotal.innerText = clientCart.reduce((sum,i)=>sum+i.price,0).toFixed(2);
+  cartTotal.innerText = total.toFixed(2);
+  clientPoints.innerText = `${calcPoints(total)} Points`;
 }
 window.toggleCart = () => {cartModal.classList.toggle('open')}
+
+// 2. PAYFAST CHECKOUT
+window.payFastCheckout = () => {
+  const total = clientCart.reduce((sum,i)=>sum+i.price,0);
+  const itemName = clientCart.map(i=>i.name).join(', ');
+  const payfastUrl = `https://sandbox.payfast.co.za/eng/process?merchant_id=${PAYFAST_MERCHANT_ID}&merchant_key=YOUR_KEY&amount=${total}&item_name=${itemName}&return=${window.location.href}`;
+  window.open(payfastUrl,'_blank');
+}
+
 window.placeOrder = () => {
   const total = clientCart.reduce((sum,i)=>sum+i.price,0);
-  const msg = `*NEW ORDER*%0AName: ${clientName.value}%0APhone: ${clientPhone.value}%0AItems: ${clientCart.map(i=>i.name).join(', ')}%0ATotal: R${total}`;
+  const points = calcPoints(total);
+  const msg = `*NEW ORDER*%0AName: ${clientName.value}%0APhone: ${clientPhone.value}%0AItems: ${clientCart.map(i=>i.name).join(', ')}%0ATotal: R${total}%0APoints Earned: ${points}`;
   window.open(`https://wa.me/${COMPANY_WHATSAPP}?text=${msg}`,'_blank');
-  push(ref(db,'tickets'),{name:clientName.value,phone:clientPhone.value,items:clientCart,total:total,status:'New Order',created:Date.now()});
-  clientCart=[]; updateCartUI(); toggleCart(); showToast('✅ Order placed!');
+  push(ref(db,'tickets'),{name:clientName.value,phone:clientPhone.value,items:clientCart,total:total,status:'New Order',points:points,created:Date.now()});
+  push(ref(db,'crm/'+clientPhone.value.replace(/\D/g,'')),{name:clientName.value,phone:clientPhone.value,points:points,lastVisit:Date.now()});
+  clientCart=[]; updateCartUI(); toggleCart(); showToast(`✅ Order placed! +${points} Points`);
 }
 
 // TICKETS
+window.setTicketMode = (mode) => {
+  ticketMode = mode;
+  posMode.style.display = mode==='pos'?'block':'none';
+  manualMode.style.display = mode==='manual'?'block':'none';
+  posModeBtn.classList.toggle('active', mode==='pos');
+  manualModeBtn.classList.toggle('active', mode==='manual');
+}
+
 function renderTicketProducts(){
   ticketProductList.innerHTML = services.map(s=>`
     <div class="service-price">
@@ -370,6 +425,7 @@ window.addToTicketCart = (id) => {
 function calcTicketTotal(){
   const total = ticketCart.reduce((sum,i)=>sum+i.price,0);
   ticketTotal.innerText = total.toFixed(2);
+  ticketPoints.innerText = calcPoints(total);
   ticketProductList.innerHTML = services.map(s=>`
     <div class="service-price">
       <span>${s.name} - R${s.price}</span>
@@ -379,21 +435,57 @@ function calcTicketTotal(){
 }
 
 window.createTicket=()=>{
-  const total = ticketCart.reduce((sum,i)=>sum+i.price,0);
-  const t={name:tName.value,phone:tPhone.value,items:ticketCart,total:total,status:'Active',created:Date.now()};
-  push(ref(db,'tickets'),t);push(ref(db,'crm'),{name:tName.value,phone:tPhone.value,visits:1,lastVisit:Date.now()});
-  window.open(`https://wa.me/27${tPhone.value.replace(/^0/,'')}?text=*TICKET*%0A${t.name}%0AItems: ${ticketCart.map(i=>i.name).join(', ')}%0ATotal: R${total}`,'_blank');
-  push(ref(db,'activity'), {msg:`New Sale: R${total}`,time:Date.now()}); ticketCart=[]; calcTicketTotal();
+  let total = 0; let items = []; let ticketName = tName.value;
+  if(ticketMode === 'pos'){
+    total = ticketCart.reduce((sum,i)=>sum+i.price,0);
+    items = ticketCart;
+    ticketName = ticketName || 'POS Sale';
+  } else {
+    total = parseFloat(tManualPrice.value) || 0;
+    items = [{name: tManualName.value, price: total, desc: tManualDesc.value}];
+    ticketName = tManualName.value || 'Manual Ticket';
+  }
+  const points = calcPoints(total);
+  const t={name:ticketName,phone:tPhone.value,items:items,total:total,status:'Active',created:Date.now(),mode:ticketMode,points:points};
+  push(ref(db,'tickets'),t);
+  push(ref(db,'crm/'+tPhone.value.replace(/\D/g,'')),{name:tName.value,phone:tPhone.value,points:points,lastVisit:Date.now()});
+
+  let itemList = items.map(i=>i.name).join(', ');
+  window.open(`https://wa.me/27${tPhone.value.replace(/^0/,'')}?text=*TICKET*%0A${ticketName}%0AItems: ${itemList}%0ATotal: R${total}%0APoints: ${points}`,'_blank');
+  push(ref(db,'activity'), {msg:`New Sale: R${total} +${points}pts`,time:Date.now()});
+
+  ticketCart=[]; calcTicketTotal();
+  tManualName.value=''; tManualPrice.value=''; tManualDesc.value='';
+  showToast(`✅ Ticket Created: R${total} +${points} Points`);
 }
+
 function renderTickets(){
   ticketsList.innerHTML=tickets.map(t=>`
-    <div class="card ticket"><h4>${t.name}</h4><p>Items: ${t.items? t.items.map(i=>i.name).join(', '):t.type}</p><p style="color:var(--accent)">R${t.total||t.price}</p><p>Status: ${t.status}</p>
-    <canvas id="qr_${t.id}" class="qr"></canvas>
-    <button class="btn-secondary" onclick="markTicketUsed('${t.id}')">Mark Used</button></div>
+    <div class="card ticket">
+      <h4>${t.name} ${t.mode==='manual'?'<span class="badge">MANUAL</span>':''} ${t.points?`<span class="loyalty-badge">${t.points}pts</span>`:''}</h4>
+      <p>Items: ${t.items? t.items.map(i=>i.name).join(', '):t.type}</p>
+      <p style="color:var(--accent)">R${t.total||t.price}</p>
+      <p>Status: ${t.status}</p>
+      <canvas id="qr_${t.id}" class="qr"></canvas>
+      <button class="btn-secondary" onclick="markTicketUsed('${t.id}')">Mark Used</button>
+    </div>
   `).join('');
   tickets.forEach(t=>{if(document.getElementById(`qr_${t.id}`))QRCode.toCanvas(document.getElementById(`qr_${t.id}`),t.id,{width:120})});
 }
 window.markTicketUsed = (id) => {update(ref(db,'tickets/'+id),{status:'Used'}); showToast('✅ Ticket marked used')}
+
+// 1. QR SCANNER
+window.initScanner = () => {
+  if(!html5QrCode){
+    html5QrCode = new Html5Qrcode("qrScanner");
+    const config = { fps: 10, qrbox: 250 };
+    html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+      markTicketUsed(decodedText);
+      html5QrCode.stop();
+      showToast('✅ Ticket Scanned & Used!');
+    });
+  }
+}
 
 // CLIENT LINK
 window.generateClientLink = () => {
@@ -403,9 +495,17 @@ window.generateClientLink = () => {
   window.open(`https://wa.me/?text=Shop with us: ${link}`,'_blank');
 }
 
-// CRM + FEED + INVOICES - SAME AS BEFORE
-function renderCRM(){crmList.innerHTML=crm.map(c=>`<div class="card"><h4>${c.name}</h4><p>${c.phone}</p><p>Visits: ${c.visits}</p></div>`).join('')}
-window.searchCRM=()=>{const q=crmSearch.value;crmList.innerHTML=crm.filter(c=>c.phone.includes(q)).map(c=>`<div class="card"><h4>${c.name}</h4><p>${c.phone}</p></div>`).join('')}
+// CRM + FEED + INVOICES
+function renderCRM(){
+  crmList.innerHTML=crm.map(c=>`
+    <div class="card">
+      <h4>${c.name} <span class="loyalty-badge">${c.points||0} pts</span></h4>
+      <p>${c.phone}</p>
+      <p>Last Visit: ${c.lastVisit? new Date(c.lastVisit).toLocaleDateString(): 'N/A'}</p>
+    </div>
+  `).join('');
+}
+window.searchCRM=()=>{const q=crmSearch.value;crmList.innerHTML=crm.filter(c=>c.phone.includes(q)).map(c=>`<div class="card"><h4>${c.name}</h4><p>${c.phone}</p><p>${c.points||0} Points</p></div>`).join('')}
 
 window.createPost=()=>{push(ref(db,'feed'),{text:fText.value,img:fImg.value,time:Date.now()}); push(ref(db,'activity'), {msg:'New Post',time:Date.now()})}
 function renderFeed(){feedList.innerHTML=feed.map(f=>`<div class="card">${f.img?`<img src="${f.img}" style="width:100%;border-radius:12px">`:''}<p>${f.text}</p><small style="color:var(--muted)">${new Date(f.time).toLocaleString()}</small></div>`).join('')}
@@ -444,7 +544,7 @@ window.orderWhatsApp=(name,price)=>{window.open(`https://wa.me/${COMPANY_WHATSAP
 // ALIVE UI
 window.showToast = (msg) => {toast.innerText = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000)}
 window.celebrate = () => {for(let i=0; i<50; i++){const c = document.createElement('div'); c.style.cssText = `position:absolute;width:10px;height:10px;background:${['#00FF88','#00D4FF','#FFD700'][i%3]};left:${Math.random()*100}%;animation:fall 3s linear`; confetti.appendChild(c); setTimeout(()=>c.remove(),3000)}}
-window.quickActions = () => {const action = prompt('Quick Action:\n1. New Ticket\n2. New Order\n3. Post News'); if(action==='1') showTab('tickets'); if(action==='2') showTab('services'); if(action==='3') showTab('feed')}
+window.quickActions = () => {const action = prompt('Quick Action:\n1. New Ticket\n2. New Order\n3. Post News\n4. Open Scanner'); if(action==='1') showTab('tickets'); if(action==='2') showTab('services'); if(action==='3') showTab('feed'); if(action==='4') showTab('scanner')}
 function initPresence(){let presenceRef = ref(db,'presence/'+Date.now()); set(presenceRef,true); onValue(ref(db,'presence'), s => {const count = s.val()? Object.keys(s.val()).length : 1; roleBadge.innerHTML = `${currentRole} <span class="live-indicator"></span>${count} Online`})}
 window.getSuggestion = () => {if(tickets.length > 10) showToast('💡 Peak hours! Add more staff'); if(revenue > 5000) showToast('🎉 Target reached! Celebrate team')}
 setInterval(getSuggestion,30000);
