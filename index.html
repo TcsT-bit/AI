@@ -32,6 +32,7 @@
 #installBtn{position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;padding:18px 26px;border-radius:50px;font-weight:900;display:none;z-index:999;box-shadow:0 10px 30px rgba(255,215,0,0.4)}
 .badge{background:var(--danger);color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800}
 .paid-badge{background:var(--success);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:900}
+.service-price{display:flex;justify-content:space-between;align-items:center;margin:8px 0;padding:12px;background:#0F0F0F;border-radius:12px}
 
 /* WATER BG + ALIVE UI */
 #waterBg{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;pointer-events:none}
@@ -104,20 +105,20 @@
         <select class="input" id="sCategory"><option>Restaurant</option><option>Night Club</option><option>Pool</option><option>Car Wash</option><option>Guest House</option><option>Liquor</option><option>Events</option></select>
         <button class="btn" onclick="addService()">Add Product</button>
       </div>
+      <div class="card"><h3>Manage Service Prices</h3><div id="servicePrices"></div></div>
       <div class="grid" id="servicesList"></div>
     </div>
 
     <div id="tickets" style="display:none">
       <div class="card" id="ticketAdmin">
-        <h3>Create Ticket</h3>
+        <h3>Create Ticket / POS Sale</h3>
         <input class="input" id="tName" placeholder="Guest Name">
         <input class="input" id="tPhone" placeholder="Phone 076...">
-        <select class="input" id="tType" onchange="updateTicketPrice()"></select>
-        <select class="input" id="tProduct" onchange="addProductToTicket()"><option>Select Product to Add</option></select>
-        <div id="ticketProducts"></div>
-        <input class="input" id="tCustomPrice" type="number" placeholder="Custom Price R">
+        <h4 style="margin-top:15px">Select Products/Services:</h4>
+        <div id="ticketProductList"></div>
+        <div style="font-size:20px;font-weight:900;margin:15px 0">Total: R<span id="ticketTotal">0</span></div>
         <button class="btn" onclick="createTicket()">Create & WhatsApp Ticket</button>
-        <button class="btn-secondary" onclick="manageTicketPrices()" style="margin-top:10px">⚙️ Edit Ticket Prices</button>
+        <button class="btn-secondary" onclick="generateClientLink()" style="margin-top:10px">🔗 Generate Client PWA Link</button>
       </div>
       <div id="ticketsList"></div>
     </div>
@@ -177,21 +178,12 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const COMPANY_WHATSAPP = "27762453878";
 
-let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketPrices = {}; let ticketProducts = [];
+let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketCart = [];
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register(URL.createObjectURL(new Blob([`self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))})`],{type:'text/javascript'})))}
 
-// WATER BG GENERATOR
-function createBubbles(){
-  for(let i=0;i<20;i++){
-    const b = document.createElement('div');
-    b.className = 'bubble';
-    b.style.width = b.style.height = Math.random()*100+20+'px';
-    b.style.left = Math.random()*100+'%';
-    b.style.animationDelay = Math.random()*15+'s';
-    waterBg.appendChild(b);
-  }
-}
+// WATER BG
+function createBubbles(){for(let i=0;i<20;i++){const b=document.createElement('div');b.className='bubble';b.style.width=b.style.height=Math.random()*100+20+'px';b.style.left=Math.random()*100+'%';b.style.animationDelay=Math.random()*15+'s';waterBg.appendChild(b)}}
 createBubbles();
 
 window.selectRole = (role)=>{
@@ -211,11 +203,7 @@ window.showTab = (tab)=>{
 }
 
 function loadAll(){
-  onValue(ref(db,'ticketPrices'), s => {
-    ticketPrices = s.val() || {Pool:50,VIP:500,GuestHouse:800,Event:200};
-    renderTicketTypes();
-  });
-  onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();renderProductSelect();updateStats()});
+  onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();renderTicketProducts();renderServicePrices();updateStats()});
   onValue(ref(db,'tickets'),s=>{tickets=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderTickets();updateStats()});
   onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[];renderFeed()});
   onValue(ref(db,'crm'),s=>{crm=s.val()?Object.values(s.val()):[];renderCRM()});
@@ -243,35 +231,8 @@ function initChart(){
   });
 }
 
-// TICKET PRICES + PRODUCTS
-function renderTicketTypes(){
-  tType.innerHTML = Object.keys(ticketPrices).map(k=>`<option>${k} - R${ticketPrices[k]}</option>`).join('');
-}
-function renderProductSelect(){
-  tProduct.innerHTML = '<option>Select Product to Add</option>' + services.map(s=>`<option>${s.name} - R${s.price}</option>`).join('');
-}
-window.addProductToTicket = () => {
-  if(tProduct.value!== 'Select Product to Add'){
-    ticketProducts.push(tProduct.value);
-    ticketProductsDiv.innerHTML += `<div style="background:#111;padding:8px;border-radius:8px;margin:5px 0">${tProduct.value}</div>`;
-  }
-}
-window.manageTicketPrices = () => {
-  let newPrices = prompt('Edit Prices: Format Name=Price,Name=Price\nEx: Pool=60,VIP=550');
-  if(newPrices){
-    const obj = {};
-    newPrices.split(',').forEach(p=>{const [k,v]=p.split('='); obj[k]=parseInt(v)});
-    set(ref(db,'ticketPrices'), obj);
-    showToast('✅ Ticket prices updated');
-  }
-}
-window.updateTicketPrice = () => {
-  const selected = tType.value.split(' - R')[1];
-  tCustomPrice.value = selected;
-}
-
-// SERVICES
-window.addService=()=>{push(ref(db,'services'),{name:sName.value,price:sPrice.value,stock:sStock.value,img:sImg.value,cat:sCategory.value})}
+// SERVICES + EDITABLE PRICES
+window.addService=()=>{push(ref(db,'services'),{name:sName.value,price:parseFloat(sPrice.value),stock:parseInt(sStock.value),img:sImg.value,cat:sCategory.value})}
 function renderServices(){
   servicesList.innerHTML=services.map(s=>`
     <div class="card">
@@ -282,20 +243,66 @@ function renderServices(){
     </div>
   `).join('');
 }
-window.orderWhatsApp=(name,price)=>{window.open(`https://wa.me/${COMPANY_WHATSAPP}?text=Order: ${name} R${price}`,'_blank')}
+function renderServicePrices(){
+  servicePrices.innerHTML = services.map(s=>`
+    <div class="service-price">
+      <span>${s.name}</span>
+      <input type="number" value="${s.price}" style="width:100px;padding:8px" onchange="updateServicePrice('${s.id}',this.value)">
+    </div>
+  `).join('');
+}
+window.updateServicePrice = (id,val) => {update(ref(db,'services/'+id),{price:parseFloat(val)}); showToast('✅ Price updated')}
 
-// TICKETS
-window.createTicket=()=>{const t={name:tName.value,phone:tPhone.value,type:tType.value,products:ticketProducts,price:tCustomPrice.value,status:'Active',created:Date.now()};push(ref(db,'tickets'),t);push(ref(db,'crm'),{name:tName.value,phone:tPhone.value,visits:1,lastVisit:Date.now()});window.open(`https://wa.me/27${tPhone.value.replace(/^0/,'')}?text=*TICKET*%0A${t.name}%0A${t.type}%0AProducts: ${ticketProducts.join(', ')}%0AR${t.price}`,'_blank'); push(ref(db,'activity'), {msg:`New Ticket: ${t.name} R${t.price}`,time:Date.now()}); ticketProducts=[]; ticketProductsDiv.innerHTML=''}
+// TICKETS = FULL POS CART
+function renderTicketProducts(){
+  ticketProductList.innerHTML = services.map(s=>`
+    <div class="service-price">
+      <span>${s.name} - R${s.price}</span>
+      <button class="btn-secondary" style="width:auto;padding:8px 16px" onclick="addToTicketCart('${s.id}')">+ Add</button>
+    </div>
+  `).join('');
+}
+window.addToTicketCart = (id) => {
+  const s = services.find(x=>x.id===id);
+  ticketCart.push(s);
+  calcTicketTotal();
+  showToast(`+ ${s.name}`);
+}
+function calcTicketTotal(){
+  const total = ticketCart.reduce((sum,i)=>sum+i.price,0);
+  ticketTotal.innerText = total.toFixed(2);
+  ticketProductList.innerHTML = services.map(s=>`
+    <div class="service-price">
+      <span>${s.name} - R${s.price}</span>
+      <button class="btn-secondary" style="width:auto;padding:8px 16px" onclick="addToTicketCart('${s.id}')">+ Add</button>
+    </div>
+  `).join('') + `<div style="margin-top:10px">${ticketCart.map(i=>`<span style="background:#111;padding:5px 10px;border-radius:8px;margin:3px;display:inline-block">${i.name}</span>`).join('')}</div>`;
+}
+
+window.createTicket=()=>{
+  const total = ticketCart.reduce((sum,i)=>sum+i.price,0);
+  const t={name:tName.value,phone:tPhone.value,items:ticketCart,total:total,status:'Active',created:Date.now()};
+  push(ref(db,'tickets'),t);push(ref(db,'crm'),{name:tName.value,phone:tPhone.value,visits:1,lastVisit:Date.now()});
+  window.open(`https://wa.me/27${tPhone.value.replace(/^0/,'')}?text=*TICKET*%0A${t.name}%0AItems: ${ticketCart.map(i=>i.name).join(', ')}%0ATotal: R${total}`,'_blank');
+  push(ref(db,'activity'), {msg:`New Sale: R${total}`,time:Date.now()}); ticketCart=[]; calcTicketTotal();
+}
 function renderTickets(){
   ticketsList.innerHTML=tickets.map(t=>`
-    <div class="card ticket"><h4>${t.name}</h4><p>${t.type}</p>${t.products?`<p>Products: ${t.products.join(', ')}</p>`:''}<p style="color:var(--accent)">R${t.price}</p><p>Status: ${t.status}</p>
+    <div class="card ticket"><h4>${t.name}</h4><p>Items: ${t.items? t.items.map(i=>i.name).join(', '):t.type}</p><p style="color:var(--accent)">R${t.total||t.price}</p><p>Status: ${t.status}</p>
     <canvas id="qr_${t.id}" class="qr"></canvas>
     <button class="btn-secondary" onclick="markTicketUsed('${t.id}')">Mark Used</button></div>
   `).join('');
   tickets.forEach(t=>{if(document.getElementById(`qr_${t.id}`))QRCode.toCanvas(document.getElementById(`qr_${t.id}`),t.id,{width:120})});
 }
 window.markTicketUsed = (id) => {update(ref(db,'tickets/'+id),{status:'Used'}); showToast('✅ Ticket marked used')}
-setInterval(()=>{tickets.forEach(t=>{if(Date.now()-t.created>86400000)remove(ref(db,'tickets/'+t.id))})},60000)
+
+// CLIENT PWA LINK GENERATOR
+window.generateClientLink = () => {
+  const link = window.location.href + '?client=true';
+  navigator.clipboard.writeText(link);
+  showToast('✅ Client link copied!');
+  window.open(`https://wa.me/?text=Download our app: ${link}`,'_blank');
+}
 
 // CRM
 function renderCRM(){crmList.innerHTML=crm.map(c=>`<div class="card"><h4>${c.name}</h4><p>${c.phone}</p><p>Visits: ${c.visits}</p></div>`).join('')}
@@ -334,6 +341,7 @@ window.generateInvoice=()=>{
   window.open(`https://wa.me/27${iPhone.value.replace(/^0/,'')}?text=*INVOICE*%0ATotal: R${total.innerText}`,'_blank');
 }
 window.payFast=()=>{window.open('https://www.payfast.co.za/eng/process','_blank')}
+window.orderWhatsApp=(name,price)=>{window.open(`https://wa.me/${COMPANY_WHATSAPP}?text=Order: ${name} R${price}`,'_blank')}
 
 // ALIVE UI
 window.showToast = (msg) => {toast.innerText = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000)}
