@@ -11,6 +11,8 @@
 :root{--bg:#000;--card:#0A0A0A;--card2:#111;--accent:#00FF88;--accent2:#00D4FF;--gold:#FFD700;--danger:#FF0033;--success:#00FF88;--text:#FFFFFF;--muted:#666;--border:#1A1A1A;--gradient:linear-gradient(135deg,#00FF88 0%,#00D4FF 100%);--glow:0 0 30px rgba(0,255,136,0.4)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 .header{position:sticky;top:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(40px);border-bottom:1px solid var(--border);padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:26px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
+.cart-btn{position:relative;background:var(--gradient);color:#000;padding:12px 20px;border-radius:30px;font-weight:900;cursor:pointer}
+.cart-count{position:absolute;top:-8px;right:-8px;background:var(--danger);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px}
 .sync{position:fixed;top:20px;right:20px;background:var(--accent);color:#000;padding:10px 18px;border-radius:30px;font-size:12px;font-weight:900;z-index:999;box-shadow:var(--glow);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 .role-select{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;background:radial-gradient(circle at center,#001a0a 0%,#000 100%)}
@@ -27,6 +29,8 @@
 .btn-secondary{background:#1A1A1A;color:var(--text);border:1px solid var(--border)}
 .input{width:100%;padding:16px;background:#0F0F0F;border:1px solid var(--border);border-radius:14px;color:var(--text);font-size:15px;margin:8px 0;transition:0.3s}.input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(0,255,136,0.1)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.product-card{position:relative;overflow:hidden;cursor:pointer}.product-card:hover{transform:scale(1.02)}
+.product-badge{position:absolute;top:10px;right:10px;background:var(--danger);padding:5px 10px;border-radius:20px;font-size:11px;font-weight:800}
 .ticket{border-left:4px solid var(--accent);position:relative}
 .qr{margin:15px auto;display:block;background:white;padding:10px;border-radius:12px}
 #installBtn{position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;padding:18px 26px;border-radius:50px;font-weight:900;display:none;z-index:999;box-shadow:0 10px 30px rgba(255,215,0,0.4)}
@@ -48,7 +52,9 @@
 .live-ticker{position:fixed;bottom:0;left:0;width:100%;background:rgba(0,255,136,0.1);padding:10px;overflow:hidden;white-space:nowrap;z-index:997}
 .ticker-text{display:inline-block;animation:scroll 20s linear infinite}
 @keyframes scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
-@media(max-width:768px){.role-grid{grid-template-columns:1fr}.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
+.cart-modal{position:fixed;top:0;right:-400px;width:400px;height:100vh;background:#0A0A0A;border-left:1px solid var(--border);z-index:1000;transition:0.4s;padding:20px;overflow-y:auto}
+.cart-modal.open{right:0}
+@media(max-width:768px){.role-grid{grid-template-columns:1fr}.dashboard-grid{grid-template-columns:repeat(2,1fr)}.cart-modal{width:100%}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -66,6 +72,18 @@
     <div class="role-card" onclick="selectRole('Manager')"><div style="font-size:60px">👑</div><h3>MANAGER</h3><p style="color:var(--muted)">Full Control + Analytics</p></div>
     <div class="role-card" onclick="selectRole('Reception')"><div style="font-size:60px">📋</div><h3>RECEPTION</h3><p style="color:var(--muted)">Tickets + CRM + POS</p></div>
     <div class="role-card" onclick="selectRole('Guest')"><div style="font-size:60px">🛒</div><h3>GUEST</h3><p style="color:var(--muted)">Menu + Order + Loyalty</p></div>
+  </div>
+</div>
+
+<!-- CLIENT MODE HEADER -->
+<div id="clientHeader" style="display:none">
+  <div class="header">
+    <div class="logo">OMEGA STORE</div>
+    <div class="cart-btn" onclick="toggleCart()">🛒 CART <span class="cart-count" id="cartCount">0</span></div>
+  </div>
+  <div class="nav">
+    <div class="tab active" onclick="showClientTab('feed')">📢 NEWSFEED</div>
+    <div class="tab" onclick="showClientTab('store')">🛍️ STORE</div>
   </div>
 </div>
 
@@ -155,6 +173,27 @@
   </div>
 </div>
 
+<!-- CLIENT STORE -->
+<div id="clientApp" style="display:none">
+  <div id="clientFeed"></div>
+  <div id="clientStore" style="display:none">
+    <div class="container">
+      <div class="grid" id="clientProducts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CART MODAL -->
+<div class="cart-modal" id="cartModal">
+  <h3>Your Cart</h3>
+  <div id="cartItems"></div>
+  <div style="font-size:24px;font-weight:900;margin:20px 0">Total: R<span id="cartTotal">0</span></div>
+  <input class="input" id="clientName" placeholder="Your Name">
+  <input class="input" id="clientPhone" placeholder="Your Phone">
+  <button class="btn" onclick="placeOrder()">Place Order via WhatsApp</button>
+  <button class="btn-secondary" onclick="toggleCart()" style="margin-top:10px">Close</button>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="floating-action" onclick="quickActions()">⚡</div>
 <div class="confetti" id="confetti"></div>
@@ -178,11 +217,20 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const COMPANY_WHATSAPP = "27762453878";
 
-let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketCart = [];
+let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketCart = []; let clientCart = []; let isClientMode = false;
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register(URL.createObjectURL(new Blob([`self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))})`],{type:'text/javascript'})))}
 
-// WATER BG
+// CHECK CLIENT MODE
+if(window.location.search.includes('client=true')){
+  isClientMode = true;
+  roleSelect.style.display='none';
+  mainApp.style.display='none';
+  clientHeader.style.display='block';
+  clientApp.style.display='block';
+  loadClientData();
+}
+
 function createBubbles(){for(let i=0;i<20;i++){const b=document.createElement('div');b.className='bubble';b.style.width=b.style.height=Math.random()*100+20+'px';b.style.left=Math.random()*100+'%';b.style.animationDelay=Math.random()*15+'s';waterBg.appendChild(b)}}
 createBubbles();
 
@@ -202,18 +250,29 @@ window.showTab = (tab)=>{
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active')); event.target.classList.add('active');
 }
 
+window.showClientTab = (tab)=>{
+  clientFeed.style.display = tab==='feed'?'block':'none';
+  clientStore.style.display = tab==='store'?'block':'none';
+  document.querySelectorAll('#clientHeader.tab').forEach(el=>el.classList.remove('active')); event.target.classList.add('active');
+}
+
 function loadAll(){
-  onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();renderTicketProducts();renderServicePrices();updateStats()});
+  onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();renderTicketProducts();renderServicePrices();updateStats(); renderClientProducts()});
   onValue(ref(db,'tickets'),s=>{tickets=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderTickets();updateStats()});
-  onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[];renderFeed()});
+  onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[];renderFeed(); renderClientFeed()});
   onValue(ref(db,'crm'),s=>{crm=s.val()?Object.values(s.val()):[];renderCRM()});
   onValue(ref(db,'invoices'),s=>{invoices=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderInvoices()});
   onValue(ref(db,'activity'), snap => {
     const acts = snap.val()? Object.values(snap.val()).reverse().slice(0,5) : [];
-    if(acts.length > 0) document.querySelector('.tab').innerHTML = '📊 DASHBOARD<span class="notification-dot"></span>';
+    if(acts.length > 0 &&!isClientMode) document.querySelector('.tab').innerHTML = '📊 DASHBOARD<span class="notification-dot"></span>';
     tickerText.innerText = acts.map(a=>a.msg).join(' • ') || '🟢 LIVE: System Running';
   });
   syncStatus.innerText='🟢 LIVE';
+}
+
+function loadClientData(){
+  onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[]; renderClientProducts()});
+  onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[]; renderClientFeed()});
 }
 
 function updateStats(){
@@ -231,11 +290,11 @@ function initChart(){
   });
 }
 
-// SERVICES + EDITABLE PRICES
+// SERVICES
 window.addService=()=>{push(ref(db,'services'),{name:sName.value,price:parseFloat(sPrice.value),stock:parseInt(sStock.value),img:sImg.value,cat:sCategory.value})}
 function renderServices(){
   servicesList.innerHTML=services.map(s=>`
-    <div class="card">
+    <div class="card product-card">
       <img src="${s.img}" style="width:100%;border-radius:12px">
       <h4>${s.name} ${s.stock<10?'<span class="badge">LOW STOCK</span>':''}</h4>
       <p style="color:var(--accent)">R${s.price} | Stock: ${s.stock}</p>
@@ -253,7 +312,47 @@ function renderServicePrices(){
 }
 window.updateServicePrice = (id,val) => {update(ref(db,'services/'+id),{price:parseFloat(val)}); showToast('✅ Price updated')}
 
-// TICKETS = FULL POS CART
+// CLIENT STORE - TEMU LEVEL
+function renderClientProducts(){
+  clientProducts.innerHTML = services.map(s=>`
+    <div class="card product-card">
+      ${s.stock<10?'<div class="product-badge">LOW STOCK</div>':''}
+      <img src="${s.img}" style="width:100%;height:200px;object-fit:cover;border-radius:12px">
+      <h4>${s.name}</h4>
+      <p style="color:var(--muted)">${s.cat}</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <span style="font-size:24px;font-weight:900;color:var(--accent)">R${s.price}</span>
+        <button class="btn-secondary" style="width:auto;padding:10px 20px" onclick="addToClientCart('${s.id}')">Add to Cart</button>
+      </div>
+    </div>
+  `).join('');
+}
+window.addToClientCart = (id) => {
+  const s = services.find(x=>x.id===id);
+  clientCart.push(s);
+  updateCartUI();
+  showToast(`Added ${s.name}`);
+}
+function updateCartUI(){
+  cartCount.innerText = clientCart.length;
+  cartItems.innerHTML = clientCart.map((i,idx)=>`
+    <div style="display:flex;justify-content:space-between;margin:10px 0">
+      <span>${i.name}</span>
+      <span>R${i.price}</span>
+    </div>
+  `).join('');
+  cartTotal.innerText = clientCart.reduce((sum,i)=>sum+i.price,0).toFixed(2);
+}
+window.toggleCart = () => {cartModal.classList.toggle('open')}
+window.placeOrder = () => {
+  const total = clientCart.reduce((sum,i)=>sum+i.price,0);
+  const msg = `*NEW ORDER*%0AName: ${clientName.value}%0APhone: ${clientPhone.value}%0AItems: ${clientCart.map(i=>i.name).join(', ')}%0ATotal: R${total}`;
+  window.open(`https://wa.me/${COMPANY_WHATSAPP}?text=${msg}`,'_blank');
+  push(ref(db,'tickets'),{name:clientName.value,phone:clientPhone.value,items:clientCart,total:total,status:'New Order',created:Date.now()});
+  clientCart=[]; updateCartUI(); toggleCart(); showToast('✅ Order placed!');
+}
+
+// TICKETS
 function renderTicketProducts(){
   ticketProductList.innerHTML = services.map(s=>`
     <div class="service-price">
@@ -296,23 +395,22 @@ function renderTickets(){
 }
 window.markTicketUsed = (id) => {update(ref(db,'tickets/'+id),{status:'Used'}); showToast('✅ Ticket marked used')}
 
-// CLIENT PWA LINK GENERATOR
+// CLIENT LINK
 window.generateClientLink = () => {
-  const link = window.location.href + '?client=true';
+  const link = window.location.href.split('?')[0] + '?client=true';
   navigator.clipboard.writeText(link);
   showToast('✅ Client link copied!');
-  window.open(`https://wa.me/?text=Download our app: ${link}`,'_blank');
+  window.open(`https://wa.me/?text=Shop with us: ${link}`,'_blank');
 }
 
-// CRM
+// CRM + FEED + INVOICES - SAME AS BEFORE
 function renderCRM(){crmList.innerHTML=crm.map(c=>`<div class="card"><h4>${c.name}</h4><p>${c.phone}</p><p>Visits: ${c.visits}</p></div>`).join('')}
 window.searchCRM=()=>{const q=crmSearch.value;crmList.innerHTML=crm.filter(c=>c.phone.includes(q)).map(c=>`<div class="card"><h4>${c.name}</h4><p>${c.phone}</p></div>`).join('')}
 
-// FEED
 window.createPost=()=>{push(ref(db,'feed'),{text:fText.value,img:fImg.value,time:Date.now()}); push(ref(db,'activity'), {msg:'New Post',time:Date.now()})}
 function renderFeed(){feedList.innerHTML=feed.map(f=>`<div class="card">${f.img?`<img src="${f.img}" style="width:100%;border-radius:12px">`:''}<p>${f.text}</p><small style="color:var(--muted)">${new Date(f.time).toLocaleString()}</small></div>`).join('')}
+function renderClientFeed(){clientFeed.innerHTML = '<div class="container">' + feed.map(f=>`<div class="card">${f.img?`<img src="${f.img}" style="width:100%;border-radius:12px">`:''}<h3>${f.text}</h3><small style="color:var(--muted)">${new Date(f.time).toLocaleString()}</small></div>`).join('') + '</div>'}
 
-// INVOICES
 let invItems=0;
 window.addInvoiceItem=()=>{invoiceItems.innerHTML+=`<div style="display:flex;gap:10px"><input class="input" id="iItem${invItems}" placeholder="Item"><input class="input" id="iPrice${invItems}" placeholder="Price" type="number" onkeyup="calcInvoice()"></div>`;invItems++}
 function calcInvoice(){
