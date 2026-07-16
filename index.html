@@ -17,7 +17,7 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
 .sync{position:fixed;top:20px;right:20px;background:var(--accent);color:#000;padding:10px 18px;border-radius:30px;font-size:12px;font-weight:900;z-index:999;box-shadow:var(--glow);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 .role-select{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;background:radial-gradient(circle at center,#001a0a 0%,#000 100%)}
-.role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:25px;margin-top:40px;max-width:1000px}
+.role-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:25px;margin-top:40px;max-width:1200px}
 .role-card{background:linear-gradient(145deg,rgba(10,10,10,0.8),rgba(17,17,17,0.8));border:1px solid var(--border);padding:50px 30px;border-radius:24px;text-align:center;cursor:pointer;transition:0.4s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px)}.role-card:hover{border-color:var(--accent);transform:translateY(-8px) scale(1.02);box-shadow:var(--glow)}
 .nav{position:sticky;top:78px;z-index:99;background:rgba(0,0,0,0.85);backdrop-filter:blur(40px);display:flex;gap:10px;padding:15px;overflow-x:auto;border-bottom:1px solid var(--border)}
 .tab{padding:14px 24px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;font-weight:800;white-space:nowrap;transition:0.3s;position:relative}.tab.active{background:var(--gradient);color:#000;box-shadow:var(--glow);transform:scale(1.05)}
@@ -41,6 +41,7 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
 .mode-btn.active{background:var(--gradient);color:#000}
 .loyalty-badge{background:var(--gold);color:#000;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:900}
 #qrScanner{width:100%;border-radius:12px}
+.clock-badge{background:var(--success);color:#000;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:900}
 
 /* WATER BG + ALIVE UI */
 #waterBg{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;pointer-events:none}
@@ -60,6 +61,9 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
 .cart-modal.open{right:0}
 .theme-toggle{position:fixed;bottom:150px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;z-index:998}
 @media(max-width:768px){.role-grid{grid-template-columns:1fr}.dashboard-grid{grid-template-columns:repeat(2,1fr)}.cart-modal{width:100%}}
+
+/* RECEIPT PRINT */
+@media print{.no-print{display:none}body{background:white;color:black}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -76,8 +80,9 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
   <h1 class="logo">OMEGA OPS</h1>
   <p style="color:var(--muted);margin-top:10px">5 STAR BUSINESS OPERATING SYSTEM</p>
   <div class="role-grid">
-    <div class="role-card" onclick="selectRole('Manager')"><div style="font-size:60px">👑</div><h3>MANAGER</h3><p style="color:var(--muted)">Full Control + Analytics</p></div>
+    <div class="role-card" onclick="selectRole('Manager')"><div style="font-size:60px">👑</div><h3>MANAGER</h3><p style="color:var(--muted)">Full Control + CEO Dashboard</p></div>
     <div class="role-card" onclick="selectRole('Reception')"><div style="font-size:60px">📋</div><h3>RECEPTION</h3><p style="color:var(--muted)">Tickets + CRM + POS + Scanner</p></div>
+    <div class="role-card" onclick="selectRole('Staff')"><div style="font-size:60px">⏰</div><h3>STAFF</h3><p style="color:var(--muted)">Clock In/Out + Tasks</p></div>
     <div class="role-card" onclick="selectRole('Guest')"><div style="font-size:60px">🛒</div><h3>GUEST</h3><p style="color:var(--muted)">Menu + Order + Loyalty</p></div>
   </div>
 </div>
@@ -97,14 +102,16 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
 <div id="mainApp" style="display:none">
   <div class="header">
     <div class="logo">OMEGA OPS</div>
-    <div>Role: <span id="roleBadge" style="color:var(--accent)">Manager</span></div>
+    <div>Branch: <select id="branchSelect" class="input" style="width:auto;display:inline-block" onchange="switchBranch()"><option>Main Branch</option><option>Branch 2</option></select> | Role: <span id="roleBadge" style="color:var(--accent)">Manager</span></div>
   </div>
 
   <div class="nav" id="navTabs">
-    <div class="tab active" onclick="showTab('dashboard')">📊 DASHBOARD</div>
+    <div class="tab active" onclick="showTab('dashboard')">📊 CEO DASHBOARD</div>
     <div class="tab" onclick="showTab('services')">🍽️ SERVICES</div>
     <div class="tab" onclick="showTab('tickets')">🎫 TICKETS</div>
     <div class="tab" onclick="showTab('scanner')">📷 SCANNER</div>
+    <div class="tab" onclick="showTab('staff')">⏰ STAFF</div>
+    <div class="tab" onclick="showTab('inventory')">📦 INVENTORY</div>
     <div class="tab" onclick="showTab('crm')">👥 CRM</div>
     <div class="tab" onclick="showTab('feed')">📢 NEWSFEED</div>
     <div class="tab" onclick="showTab('invoices')">🧾 INVOICES</div>
@@ -115,8 +122,8 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
       <div class="dashboard-grid">
         <div class="stat-card"><div style="color:var(--muted)">Revenue Today</div><div class="stat-value" id="revToday">R0</div></div>
         <div class="stat-card"><div style="color:var(--muted)">Active Tickets</div><div class="stat-value" id="activeTickets">0</div></div>
-        <div class="stat-card"><div style="color:var(--muted)">Guests Served</div><div class="stat-value" id="guestsServed">0</div></div>
-        <div class="stat-card"><div style="color:var(--muted)">Loyalty Points</div><div class="stat-value" id="loyaltyPoints">0</div></div>
+        <div class="stat-card"><div style="color:var(--muted)">Staff Clocked In</div><div class="stat-value" id="staffClocked">0</div></div>
+        <div class="stat-card"><div style="color:var(--muted)">Low Stock Items</div><div class="stat-value" id="lowStock">0</div></div>
       </div>
       <div class="card"><h3>Sales This Week</h3><canvas id="salesChart"></canvas></div>
     </div>
@@ -155,6 +162,7 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
           <textarea class="input" id="tManualDesc" rows="2" placeholder="Description/Notes"></textarea>
         </div>
         <button class="btn" onclick="createTicket()">Create & WhatsApp Ticket</button>
+        <button class="btn-secondary" onclick="printReceipt()" style="margin-top:10px">🖨️ Print Receipt</button>
         <button class="btn-secondary" onclick="generateClientLink()" style="margin-top:10px">🔗 Generate Client PWA Link</button>
       </div>
       <div id="ticketsList"></div>
@@ -166,6 +174,28 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
         <h3>📷 Scan Ticket QR</h3>
         <div id="qrScanner"></div>
         <p style="color:var(--muted);margin-top:10px">Point camera at ticket QR to mark as used</p>
+      </div>
+    </div>
+
+    <!-- STAFF CLOCK IN/OUT -->
+    <div id="staff" style="display:none">
+      <div class="card">
+        <h3>⏰ Staff Clock In/Out</h3>
+        <input class="input" id="staffName" placeholder="Staff Name">
+        <input class="input" id="staffPin" type="password" placeholder="4 Digit PIN">
+        <div style="display:flex;gap:10px">
+          <button class="btn" onclick="clockIn()">CLOCK IN</button>
+          <button class="btn-secondary" onclick="clockOut()">CLOCK OUT</button>
+        </div>
+      </div>
+      <div id="staffList"></div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="inventory" style="display:none">
+      <div class="card">
+        <h3>📦 Stock Inventory</h3>
+        <div id="inventoryList"></div>
       </div>
     </div>
 
@@ -223,6 +253,9 @@ body.light{--bg:#F5F5F5;--card:#FFFFFF;--card2:#F0F0F0;--text:#000;--border:#DDD
   <button class="btn-secondary" onclick="toggleCart()" style="margin-top:10px">Close</button>
 </div>
 
+<!-- HIDDEN RECEIPT -->
+<div id="receiptPrint" style="display:none"></div>
+
 <div class="toast" id="toast"></div>
 <div class="floating-action" onclick="quickActions()">⚡</div>
 <div class="confetti" id="confetti"></div>
@@ -247,7 +280,7 @@ const db = getDatabase(app);
 const COMPANY_WHATSAPP = "27762453878";
 const PAYFAST_MERCHANT_ID = "10000100"; // Replace with your PayFast ID
 
-let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let revenue = 0; let ticketCart = []; let clientCart = []; let isClientMode = false; let ticketMode = 'pos'; let html5QrCode;
+let currentRole = 'Guest'; let services = []; let tickets = []; let feed = []; let invoices = []; let crm = []; let staff = []; let revenue = 0; let ticketCart = []; let clientCart = []; let isClientMode = false; let ticketMode = 'pos'; let html5QrCode; let currentBranch = 'Main Branch';
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register(URL.createObjectURL(new Blob([`self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))})`],{type:'text/javascript'})))}
 
@@ -263,11 +296,14 @@ if(window.location.search.includes('client=true')){
 function createBubbles(){for(let i=0;i<20;i++){const b=document.createElement('div');b.className='bubble';b.style.width=b.style.height=Math.random()*100+20+'px';b.style.left=Math.random()*100+'%';b.style.animationDelay=Math.random()*15+'s';waterBg.appendChild(b)}}
 createBubbles();
 
-// 3. DARK/LIGHT TOGGLE
+// DARK/LIGHT TOGGLE
 window.toggleTheme = () => {
   document.body.classList.toggle('light');
   document.querySelector('.theme-toggle').innerText = document.body.classList.contains('light')?'🌙':'☀️';
 }
+
+// MULTI-BRANCH
+window.switchBranch = () => {currentBranch = branchSelect.value; loadAll(); showToast(`Switched to ${currentBranch}`)}
 
 window.selectRole = (role)=>{
   currentRole=role;
@@ -281,7 +317,7 @@ window.selectRole = (role)=>{
 }
 
 window.showTab = (tab)=>{
-  ['dashboard','services','tickets','scanner','crm','feed','invoices'].forEach(t=>document.getElementById(t).style.display='none');
+  ['dashboard','services','tickets','scanner','staff','inventory','crm','feed','invoices'].forEach(t=>document.getElementById(t).style.display='none');
   document.getElementById(tab).style.display='block';
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active')); event.target.classList.add('active');
 }
@@ -293,12 +329,14 @@ window.showClientTab = (tab)=>{
 }
 
 function loadAll(){
-  onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();renderTicketProducts();renderServicePrices();updateStats(); renderClientProducts()});
-  onValue(ref(db,'tickets'),s=>{tickets=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderTickets();updateStats()});
-  onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[];renderFeed(); renderClientFeed()});
-  onValue(ref(db,'crm'),s=>{crm=s.val()?Object.values(s.val()):[];renderCRM(); updateLoyaltyStats()});
-  onValue(ref(db,'invoices'),s=>{invoices=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderInvoices()});
-  onValue(ref(db,'activity'), snap => {
+  const branchRef = `branches/${currentBranch}`;
+  onValue(ref(db,`${branchRef}/services`),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[];renderServices();renderTicketProducts();renderServicePrices();updateStats(); renderClientProducts(); renderInventory()});
+  onValue(ref(db,`${branchRef}/tickets`),s=>{tickets=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderTickets();updateStats()});
+  onValue(ref(db,`${branchRef}/feed`),s=>{feed=s.val()?Object.values(s.val()).reverse():[];renderFeed(); renderClientFeed()});
+  onValue(ref(db,`${branchRef}/crm`),s=>{crm=s.val()?Object.values(s.val()):[];renderCRM(); updateLoyaltyStats()});
+  onValue(ref(db,`${branchRef}/invoices`),s=>{invoices=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})).reverse():[];renderInvoices()});
+  onValue(ref(db,`${branchRef}/staff`),s=>{staff=s.val()?Object.values(s.val()):[];renderStaff(); updateStaffStats()});
+  onValue(ref(db,`${branchRef}/activity`), snap => {
     const acts = snap.val()? Object.values(snap.val()).reverse().slice(0,5) : [];
     tickerText.innerText = acts.map(a=>a.msg).join(' • ') || '🟢 LIVE: System Running';
   });
@@ -306,26 +344,59 @@ function loadAll(){
 }
 
 function loadClientData(){
-  onValue(ref(db,'services'),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[]; renderClientProducts()});
-  onValue(ref(db,'feed'),s=>{feed=s.val()?Object.values(s.val()).reverse():[]; renderClientFeed()});
+  onValue(ref(db,`branches/${currentBranch}/services`),s=>{services=s.val()?Object.keys(s.val()).map(k=>({id:k,...s.val()[k]})):[]; renderClientProducts()});
+  onValue(ref(db,`branches/${currentBranch}/feed`),s=>{feed=s.val()?Object.values(s.val()).reverse():[]; renderClientFeed()});
 }
 
 function updateStats(){
   revToday.innerText='R'+revenue.toLocaleString();
   activeTickets.innerText=tickets.filter(t=>t.status!=='Used').length;
-  guestsServed.innerText=crm.length;
+  lowStock.innerText=services.filter(s=>s.stock<10).length;
 }
 
-// 4. LOYALTY SYSTEM
+// STAFF CLOCK IN/OUT
+function updateStaffStats(){
+  staffClocked.innerText = staff.filter(s=>s.clockIn &&!s.clockOut).length;
+}
+window.clockIn = () => {
+  const time = Date.now();
+  push(ref(db,`branches/${currentBranch}/staff`),{name:staffName.value,pin:staffPin.value,clockIn:time,clockOut:null});
+  showToast(`✅ ${staffName.value} Clocked IN`);
+}
+window.clockOut = () => {
+  const staffMember = staff.find(s=>s.name===staffName.value && s.pin===staffPin.value &&!s.clockOut);
+  if(staffMember) update(ref(db,`branches/${currentBranch}/staff/${staffMember.id}`),{clockOut:Date.now()});
+  showToast(`✅ ${staffName.value} Clocked OUT`);
+}
+function renderStaff(){
+  staffList.innerHTML = staff.map(s=>`
+    <div class="card">
+      <h4>${s.name} ${s.clockOut?'':'<span class="clock-badge">ON DUTY</span>'}</h4>
+      <p>In: ${s.clockIn? new Date(s.clockIn).toLocaleTimeString():''}</p>
+      <p>Out: ${s.clockOut? new Date(s.clockOut).toLocaleTimeString():''}</p>
+    </div>
+  `).join('');
+}
+
+// INVENTORY
+function renderInventory(){
+  inventoryList.innerHTML = services.map(s=>`
+    <div class="service-price">
+      <span>${s.name}</span>
+      <span>Stock: ${s.stock} ${s.stock<10?'<span class="badge">LOW</span>':''}</span>
+    </div>
+  `).join('');
+}
+
+// LOYALTY SYSTEM
 function updateLoyaltyStats(){
   const totalPoints = crm.reduce((sum,c)=>sum+(c.points||0),0);
   loyaltyPoints.innerText = totalPoints;
 }
-
 function calcPoints(amount){ return Math.floor(amount / 100); } // R100 = 1 point
 
 // SERVICES
-window.addService=()=>{push(ref(db,'services'),{name:sName.value,price:parseFloat(sPrice.value),stock:parseInt(sStock.value),img:sImg.value,cat:sCategory.value})}
+window.addService=()=>{push(ref(db,`branches/${currentBranch}/services`),{name:sName.value,price:parseFloat(sPrice.value),stock:parseInt(sStock.value),img:sImg.value,cat:sCategory.value})}
 function renderServices(){
   servicesList.innerHTML=services.map(s=>`
     <div class="card product-card">
@@ -344,7 +415,7 @@ function renderServicePrices(){
     </div>
   `).join('');
 }
-window.updateServicePrice = (id,val) => {update(ref(db,'services/'+id),{price:parseFloat(val)}); showToast('✅ Price updated')}
+window.updateServicePrice = (id,val) => {update(ref(db,`branches/${currentBranch}/services/${id}`),{price:parseFloat(val)}); showToast('✅ Price updated')}
 
 // CLIENT STORE + LOYALTY
 function renderClientProducts(){
@@ -370,8 +441,7 @@ window.addToClientCart = (id) => {
 function updateCartUI(){
   cartCount.innerText = clientCart.length;
   const total = clientCart.reduce((sum,i)=>sum+i.price,0);
-  cartItems.innerHTML = clientCart.map((i,idx)=>`
-    <div style="display:flex;justify-content:space-between;margin:10px 0">
+  cartItems.innerHTML = clientCart.map((i,idx)=>`<div style="display:flex;justify-content:space-between;margin:10px 0">
       <span>${i.name}</span>
       <span>R${i.price}</span>
     </div>
@@ -381,7 +451,7 @@ function updateCartUI(){
 }
 window.toggleCart = () => {cartModal.classList.toggle('open')}
 
-// 2. PAYFAST CHECKOUT
+// PAYFAST CHECKOUT
 window.payFastCheckout = () => {
   const total = clientCart.reduce((sum,i)=>sum+i.price,0);
   const itemName = clientCart.map(i=>i.name).join(', ');
@@ -394,12 +464,12 @@ window.placeOrder = () => {
   const points = calcPoints(total);
   const msg = `*NEW ORDER*%0AName: ${clientName.value}%0APhone: ${clientPhone.value}%0AItems: ${clientCart.map(i=>i.name).join(', ')}%0ATotal: R${total}%0APoints Earned: ${points}`;
   window.open(`https://wa.me/${COMPANY_WHATSAPP}?text=${msg}`,'_blank');
-  push(ref(db,'tickets'),{name:clientName.value,phone:clientPhone.value,items:clientCart,total:total,status:'New Order',points:points,created:Date.now()});
-  push(ref(db,'crm/'+clientPhone.value.replace(/\D/g,'')),{name:clientName.value,phone:clientPhone.value,points:points,lastVisit:Date.now()});
+  push(ref(db,`branches/${currentBranch}/tickets`),{name:clientName.value,phone:clientPhone.value,items:clientCart,total:total,status:'New Order',points:points,branch:currentBranch,created:Date.now()});
+  push(ref(db,`branches/${currentBranch}/crm/`+clientPhone.value.replace(/\D/g,'')),{name:clientName.value,phone:clientPhone.value,points:points,lastVisit:Date.now()});
   clientCart=[]; updateCartUI(); toggleCart(); showToast(`✅ Order placed! +${points} Points`);
 }
 
-// TICKETS
+// TICKETS + RECEIPT PRINT
 window.setTicketMode = (mode) => {
   ticketMode = mode;
   posMode.style.display = mode==='pos'?'block':'none';
@@ -419,6 +489,8 @@ function renderTicketProducts(){
 window.addToTicketCart = (id) => {
   const s = services.find(x=>x.id===id);
   ticketCart.push(s);
+  // AUTO STOCK DEDUCT
+  update(ref(db,`branches/${currentBranch}/services/${id}`),{stock: s.stock - 1});
   calcTicketTotal();
   showToast(`+ ${s.name}`);
 }
@@ -446,17 +518,35 @@ window.createTicket=()=>{
     ticketName = tManualName.value || 'Manual Ticket';
   }
   const points = calcPoints(total);
-  const t={name:ticketName,phone:tPhone.value,items:items,total:total,status:'Active',created:Date.now(),mode:ticketMode,points:points};
-  push(ref(db,'tickets'),t);
-  push(ref(db,'crm/'+tPhone.value.replace(/\D/g,'')),{name:tName.value,phone:tPhone.value,points:points,lastVisit:Date.now()});
+  const t={name:ticketName,phone:tPhone.value,items:items,total:total,status:'Active',created:Date.now(),mode:ticketMode,points:points,branch:currentBranch};
+  push(ref(db,`branches/${currentBranch}/tickets`),t);
+  push(ref(db,`branches/${currentBranch}/crm/`+tPhone.value.replace(/\D/g,'')),{name:tName.value,phone:tPhone.value,points:points,lastVisit:Date.now()});
 
   let itemList = items.map(i=>i.name).join(', ');
   window.open(`https://wa.me/27${tPhone.value.replace(/^0/,'')}?text=*TICKET*%0A${ticketName}%0AItems: ${itemList}%0ATotal: R${total}%0APoints: ${points}`,'_blank');
-  push(ref(db,'activity'), {msg:`New Sale: R${total} +${points}pts`,time:Date.now()});
+  push(ref(db,`branches/${currentBranch}/activity`), {msg:`New Sale: R${total} +${points}pts`,time:Date.now()});
+  revenue += total;
 
   ticketCart=[]; calcTicketTotal();
   tManualName.value=''; tManualPrice.value=''; tManualDesc.value='';
   showToast(`✅ Ticket Created: R${total} +${points} Points`);
+}
+
+// RECEIPT PRINTER
+window.printReceipt = () => {
+  const total = ticketCart.reduce((sum,i)=>sum+i.price,0);
+  receiptPrint.innerHTML = `
+    <div style="width:300px;padding:20px;font-family:monospace">
+      <h2 style="text-align:center">OMEGA OPS</h2>
+      <p style="text-align:center">${currentBranch}</p>
+      <hr>
+      ${ticketCart.map(i=>`<div>${i.name} ........ R${i.price}</div>`).join('')}
+      <hr>
+      <h3>Total: R${total}</h3>
+      <p>${new Date().toLocaleString()}</p>
+    </div>
+  `;
+  window.print();
 }
 
 function renderTickets(){
@@ -472,9 +562,9 @@ function renderTickets(){
   `).join('');
   tickets.forEach(t=>{if(document.getElementById(`qr_${t.id}`))QRCode.toCanvas(document.getElementById(`qr_${t.id}`),t.id,{width:120})});
 }
-window.markTicketUsed = (id) => {update(ref(db,'tickets/'+id),{status:'Used'}); showToast('✅ Ticket marked used')}
+window.markTicketUsed = (id) => {update(ref(db,`branches/${currentBranch}/tickets/${id}`),{status:'Used'}); showToast('✅ Ticket marked used')}
 
-// 1. QR SCANNER
+// QR SCANNER
 window.initScanner = () => {
   if(!html5QrCode){
     html5QrCode = new Html5Qrcode("qrScanner");
@@ -507,7 +597,7 @@ function renderCRM(){
 }
 window.searchCRM=()=>{const q=crmSearch.value;crmList.innerHTML=crm.filter(c=>c.phone.includes(q)).map(c=>`<div class="card"><h4>${c.name}</h4><p>${c.phone}</p><p>${c.points||0} Points</p></div>`).join('')}
 
-window.createPost=()=>{push(ref(db,'feed'),{text:fText.value,img:fImg.value,time:Date.now()}); push(ref(db,'activity'), {msg:'New Post',time:Date.now()})}
+window.createPost=()=>{push(ref(db,`branches/${currentBranch}/feed`),{text:fText.value,img:fImg.value,time:Date.now()}); push(ref(db,`branches/${currentBranch}/activity`), {msg:'New Post',time:Date.now()})}
 function renderFeed(){feedList.innerHTML=feed.map(f=>`<div class="card">${f.img?`<img src="${f.img}" style="width:100%;border-radius:12px">`:''}<p>${f.text}</p><small style="color:var(--muted)">${new Date(f.time).toLocaleString()}</small></div>`).join('')}
 function renderClientFeed(){clientFeed.innerHTML = '<div class="container">' + feed.map(f=>`<div class="card">${f.img?`<img src="${f.img}" style="width:100%;border-radius:12px">`:''}<h3>${f.text}</h3><small style="color:var(--muted)">${new Date(f.time).toLocaleString()}</small></div>`).join('') + '</div>'}
 
@@ -527,27 +617,34 @@ function renderInvoices(){
     <button class="btn-secondary" onclick="togglePaid('${i.id}',${!i.paid})">${i.paid?'Mark Unpaid':'Mark Paid'}</button></div>
   `).join('');
 }
-window.togglePaid = (id,status) => {update(ref(db,'invoices/'+id),{paid:status})}
+window.togglePaid = (id,status) => {update(ref(db,`branches/${currentBranch}/invoices/${id}`),{paid:status})}
 
 window.generateInvoice=()=>{
   const items = []; for(let i=0;i<invItems;i++) items.push({name:document.getElementById(`iItem${i}`).value,price:document.getElementById(`iPrice${i}`).value});
-  const inv = {name:iName.value,phone:iPhone.value,items,subtotal:subtotal.innerText,vat:vatAmount.innerText,total:total.innerText,paid:false,time:Date.now()};
-  push(ref(db,'invoices'),inv);
+  const inv = {name:iName.value,phone:iPhone.value,items,subtotal:subtotal.innerText,vat:vatAmount.innerText,total:total.innerText,paid:false,time:Date.now(),branch:currentBranch};
+  push(ref(db,`branches/${currentBranch}/invoices`),inv);
   revenue += parseFloat(total.innerText);
   celebrate(); showToast(`✅ Invoice Sent! R${total.innerText}`);
-  push(ref(db,'activity'), {msg:`New Invoice: R${total.innerText}`,time:Date.now()});
+  push(ref(db,`branches/${currentBranch}/activity`), {msg:`New Invoice: R${total.innerText}`,time:Date.now()});
   window.open(`https://wa.me/27${iPhone.value.replace(/^0/,'')}?text=*INVOICE*%0ATotal: R${total.innerText}`,'_blank');
 }
 window.payFast=()=>{window.open('https://www.payfast.co.za/eng/process','_blank')}
 window.orderWhatsApp=(name,price)=>{window.open(`https://wa.me/${COMPANY_WHATSAPP}?text=Order: ${name} R${price}`,'_blank')}
 
-// ALIVE UI
+// ALIVE UI + CEO TOOLS
 window.showToast = (msg) => {toast.innerText = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000)}
 window.celebrate = () => {for(let i=0; i<50; i++){const c = document.createElement('div'); c.style.cssText = `position:absolute;width:10px;height:10px;background:${['#00FF88','#00D4FF','#FFD700'][i%3]};left:${Math.random()*100}%;animation:fall 3s linear`; confetti.appendChild(c); setTimeout(()=>c.remove(),3000)}}
-window.quickActions = () => {const action = prompt('Quick Action:\n1. New Ticket\n2. New Order\n3. Post News\n4. Open Scanner'); if(action==='1') showTab('tickets'); if(action==='2') showTab('services'); if(action==='3') showTab('feed'); if(action==='4') showTab('scanner')}
-function initPresence(){let presenceRef = ref(db,'presence/'+Date.now()); set(presenceRef,true); onValue(ref(db,'presence'), s => {const count = s.val()? Object.keys(s.val()).length : 1; roleBadge.innerHTML = `${currentRole} <span class="live-indicator"></span>${count} Online`})}
-window.getSuggestion = () => {if(tickets.length > 10) showToast('💡 Peak hours! Add more staff'); if(revenue > 5000) showToast('🎉 Target reached! Celebrate team')}
+window.quickActions = () => {const action = prompt('Quick Action:\n1. New Ticket\n2. New Order\n3. Post News\n4. Open Scanner\n5. Print Receipt'); if(action==='1') showTab('tickets'); if(action==='2') showTab('services'); if(action==='3') showTab('feed'); if(action==='4') showTab('scanner'); if(action==='5') printReceipt()}
+function initPresence(){let presenceRef = ref(db,`branches/${currentBranch}/presence/`+Date.now()); set(presenceRef,true); onValue(ref(db,`branches/${currentBranch}/presence`), s => {const count = s.val()? Object.keys(s.val()).length : 1; roleBadge.innerHTML = `${currentRole} <span class="live-indicator"></span>${count} Online`})}
+window.getSuggestion = () => {if(tickets.length > 10) showToast('💡 Peak hours! Add more staff'); if(revenue > 5000) showToast('🎉 Target reached! Celebrate team'); if(services.filter(s=>s.stock<5).length>0) showToast('⚠️ URGENT: Restock items!')}
 setInterval(getSuggestion,30000);
+
+function initChart(){
+  new Chart(document.getElementById('salesChart'),{
+    type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Revenue',data:[1200,1900,3000,5000,2000,3000,4500],borderColor:'#00FF88',backgroundColor:'rgba(0,255,136,0.1)',tension:0.4}]},
+    options:{responsive:true,plugins:{legend:{display:false}}}
+  });
+}
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.style.display='block'});
